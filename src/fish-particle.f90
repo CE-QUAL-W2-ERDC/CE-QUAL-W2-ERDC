@@ -117,13 +117,13 @@ End Module Fishy
 
       SUBROUTINE FISH
 
-     USE SURFHE; Use Fishy; Use GDAYC;  Use SCREENC; Use GEOMC; USE GLOBAL
+     USE SURFHE; Use Fishy; Use GDAYC;  Use SCREENC; Use GEOMC; USE GLOBAL;   Use MAIN, only: IWD, FISH_PARTICLE_EXIST, KBI, RESTART_IN
      IMPLICIT NONE
-     
-     REAL :: DZ
-     INTEGER :: JF,KK,N
 
-  IF (NIT.EQ.0) THEN             ! The very first time the Subroutine FISH is called
+     REAL :: DZ
+     INTEGER :: JF,KK,N, IW, GROUPLAST
+
+  IF (NIT.EQ.0 .or. restart_in) THEN             ! The very first time the Subroutine FISH is called; SW 6/2025
 
 !***** Open 'Numerical Fish Surrogate' files
       Call Read_Fish_Data
@@ -457,7 +457,12 @@ End Module Fishy
         write(DIAGFN,*)' FISHES:FN,FISHES(FN,I)'
 ! initial fish output
     do jf=1,nfish
-    write(DIAGFN,'(i7,1x,<fpara>(f10.3,1x))')jf,(fishes(jf,i),i=1,fpara)
+      ! Write fish data: fish number, then fpara values
+      WRITE(DIAGFN,'(i7,1x)', ADVANCE='NO') jf
+      DO i = 1, fpara
+        WRITE(DIAGFN,'(f10.3,1x)', ADVANCE='NO') fishes(jf,i)
+      END DO
+      WRITE(DIAGFN,'(A)') ''  ! End line
     end do
     !close(DIAGFN)
 ! End fish output section
@@ -1379,7 +1384,12 @@ ENDIF
                    WRITE(FINALFN,*) 'ERROR: Unable to determine whether moving downstream from right or left bank to new branch'
                    write(FINALFN,*)'JDAY=',jday,' FN,FIMP,FKMP:',fn,fimp,fkmp
                    do jf=1,3     !fn
-                   write(FINALFN,'(i7,1x,<fpara>(f10.3,1x))')jf,(fishes(jf,i),i=1,fpara)
+                     ! Write fish data: fish number, then fpara values
+                     WRITE(FINALFN,'(i7,1x)', ADVANCE='NO') jf
+                     DO i = 1, fpara
+                       WRITE(FINALFN,'(f10.3,1x)', ADVANCE='NO') fishes(jf,i)
+                     END DO
+                     WRITE(FINALFN,'(A)') ''  ! End line
                    end do
                    STOP
                  END IF
@@ -1410,8 +1420,13 @@ ENDIF
              write(FINALFN,*)'Possible Error - looping GOTO10 - Set DNBP to Proper Branch'
              write(FINALFN,*)'JDAY=',jday,' FN,FIMP,FKMP:',fn,fimp,fkmp
              do jf=1,3         !fn
-             write(FINALFN,'(i7,1x,<fpara>(f10.3,1x))')jf,(fishes(jf,i),i=1,fpara)
-             end do 
+               ! Write fish data: fish number, then fpara values
+               WRITE(FINALFN,'(i7,1x)', ADVANCE='NO') jf
+               DO i = 1, fpara
+                 WRITE(FINALFN,'(f10.3,1x)', ADVANCE='NO') fishes(jf,i)
+               END DO
+               WRITE(FINALFN,'(A)') ''  ! End line
+             end do
              GOTO 10                        ! More thought needs to go into this overshooting logic
           ENDIF
         ELSE IF (FXLOC.LT.0) THEN
@@ -2384,8 +2399,8 @@ END DO   ! END OF NDT LOOP
       Use FISHY
       USE GLOBAL
       Use GEOMC
-      Use SCREENC
-      
+      Use SCREENC; USE MAIN, ONLY: KBI, RESTART_IN
+
       IMPLICIT NONE
 
       INTEGER     WB,NN,NNLAST,WATER
@@ -2396,15 +2411,13 @@ END DO   ! END OF NDT LOOP
       logical, SAVE  ::  FEGRID
       REAL :: XDIST,ZDIST,VERTFLOW
 
-      CHARACTER*1  DTYP1
-      CHARACTER*2  DTYP2
-      CHARACTER*6  FILE_PREFIX
-      CHARACTER*4  FILE_SUFFIX
+      CHARACTER*1  :: DTYP1
+      CHARACTER*2  :: DTYP2
+      CHARACTER*6  :: FILE_PREFIX='Branch'
+      CHARACTER*4  :: FILE_SUFFIX='.dat'
       CHARACTER*12 FILENAME
-      DATA         FILE_PREFIX/ 'Branch'/
-      DATA         FILE_SUFFIX/ '.dat'/
 
-      IF (NIT.EQ.0)then
+      IF (NIT.EQ.0 .OR. RESTART_IN)then   ! SW 6/2025
       FEGRID = .FALSE.                  ! The first pass is used to set up the FE grid
       allocate(totele(NBR),totbrnn(NBR))    ! SW 1/14/01
       end if
@@ -3946,11 +3959,16 @@ if(fishon.eq.' ON')then
         CLOSE(FVAR3)
       END DO
       CLOSE(GILFN)                                                                   !FISH
-      CLOSE(HYACFN) 
+      CLOSE(HYACFN)
 
 ! final fish output
     do jf=1,3   !nfish
-    write(FINALFN,'(i7,1x,<fpara>(f10.3,1x))')jf,(fishes(jf,i),i=1,fpara)
+      ! Write fish data: fish number, then fpara values
+      WRITE(FINALFN,'(i7,1x)', ADVANCE='NO') jf
+      DO i = 1, fpara
+        WRITE(FINALFN,'(f10.3,1x)', ADVANCE='NO') fishes(jf,i)
+      END DO
+      WRITE(FINALFN,'(A)') ''  ! End line
     end do
     close(FINALFN)
 ! End fish output section
@@ -4012,7 +4030,7 @@ INTEGER :: NG,I,J,NA
     end do
 
     IF(PARTICLE)THEN
-        READ(DIAGFN,1001)FXLOC,FZLOC,OUTFREQP
+        READ(DIAGFN,1001)FXLOC,FZLOC,OUTFREQ
     ELSE
         
     READ(DIAGFN,1001)FXLOC,FZLOC,FSIZE,FAGE,UFISH,VFISH,WFISH
@@ -4376,8 +4394,7 @@ INTEGER :: NG,I,J,NA
 ! WMAX: maximum vertical velocity in m/s (negaive is upward)
 ! ZMIN: minimum depth to turn on behavior maodification
 ! ZMAX: maximum depth to to attain 100% of WMAX (note exponential transition between ZMIN and ZMAX)
-   ENDIF
-   
+
  end if
 
 !      NULLFIELDWQ      = .FALSE.     ! If NULLFIELDWQ = .TRUE., actual WQ conditions are replaced with desired (Null) conditions
@@ -4674,5 +4691,5 @@ End Subroutine Part_transport
     end if
 
     return
-    end
+    End Subroutine lateral_velocity
 !************************************

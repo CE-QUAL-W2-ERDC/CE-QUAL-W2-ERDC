@@ -725,7 +725,7 @@ END SUBROUTINE WITHDRAWAL
 MODULE SELECTIVE1 
  REAL                                          :: NXTSTR, NXTTCD, NXTSPLIT,TCDFREQ,TFRQTMP
   CHARACTER(8)                                 :: TEMPC,TSPLTC
-  CHARACTER(8), ALLOCATABLE, DIMENSION(:)      :: TCELEVCON,TCYEARLY,TCNTR,TSPLTCNTR,TSYEARLY,DYNSEL,ELCONTSPL,DYNSELSPLT
+  CHARACTER(8), ALLOCATABLE, DIMENSION(:)      :: TCELEVCON,TCYEARLY,TCNTR,TSPLTCNTR,MONCTR,TSYEARLY,DYNSEL,ELCONTSPL,DYNSELSPLT
   INTEGER                                      :: NUMTEMPC,NUMTSPLT, TEMPN        
   INTEGER, ALLOCATABLE, DIMENSION(:)           :: TCNELEV,TCJB,TCJS,TCISEG,TSPLTJB,NOUTS,KSTRSPLT, JBMON, JSMON, NCOUNTCW,SELD
   REAL,          ALLOCATABLE, DIMENSION(:,:)   :: TCELEV, TEMPCRIT,QSTRFRAC
@@ -776,7 +776,18 @@ USE SELECTIVE1;   USE MAIN
         ELSE
                 OPEN  (IFILE,FILE='str_br'//segnum(1:l)//'.csv',status='unknown')
                 WRITE(IFILE,*)'Branch:,',jb,', # of structures:,',nstr(jb),', outlet temperatures'
-                WRITE(IFILE,'("      JDAY,",<nstr(jb)>(6x,"T(C),"),<nstr(jb)>(3x,"Q(m3/s),"),<nstr(jb)>(4x,"ELEVCL,"))')
+                ! Write header with variable nstr(jb) (gfortran compatible)
+                WRITE(IFILE,'(A)', ADVANCE='NO') '      JDAY,'
+                DO I = 1, nstr(jb)
+                  WRITE(IFILE,'(6x,A)', ADVANCE='NO') 'T(C),'
+                END DO
+                DO I = 1, nstr(jb)
+                  WRITE(IFILE,'(3x,A)', ADVANCE='NO') 'Q(m3/s),'
+                END DO
+                DO I = 1, nstr(jb)
+                  WRITE(IFILE,'(4x,A)', ADVANCE='NO') 'ELEVCL,'
+                END DO
+                WRITE(IFILE,'(A)') ''  ! End line
         ENDIF
         ENDIF
       END DO
@@ -796,7 +807,18 @@ USE SELECTIVE1;   USE MAIN
        ELSE
         OPEN  (IFILE,FILE='wd_out.opt',STATUS='unknown')
         WRITE(IFILE,*)'Withdrawals: # of withdrawals:',nwd,' outlet temperatures'
-        WRITE(IFILE,'("      JDAY",<nwd>(6x,"T(C)"),<nwd>(3x,"Q(m3/s)"),<nwd>(4x,"ELEVCL"))')
+        ! Write header with variable nwd (gfortran compatible)
+        WRITE(IFILE,'(A)', ADVANCE='NO') '      JDAY'
+        DO I = 1, nwd
+          WRITE(IFILE,'(6x,A)', ADVANCE='NO') 'T(C)'
+        END DO
+        DO I = 1, nwd
+          WRITE(IFILE,'(3x,A)', ADVANCE='NO') 'Q(m3/s)'
+        END DO
+        DO I = 1, nwd
+          WRITE(IFILE,'(4x,A)', ADVANCE='NO') 'ELEVCL'
+        END DO
+        WRITE(IFILE,'(A)') ''  ! End line
        ENDIF
       end if
  
@@ -843,7 +865,7 @@ USE SELECTIVE1;   USE MAIN
       
   ALLOCATE (TCNELEV(NUMTEMPC),TCJB(NUMTEMPC),TCJS(NUMTEMPC), TCELEV(NUMTEMPC,100),TCTEMP(NUMTEMPC),TCTEND(NUMTEMPC),TCTSRT(NUMTEMPC),NCOUNTC(NST,NBR),TCISEG(NUMTEMPC),TCKLAY(NUMTEMPC),TCELEVCON(NUMTEMPC)) 
   ALLOCATE (TCYEARLY(NUMTEMPC), JBMON(NUMTEMPC),JSMON(NUMTEMPC),TCNTR(NUMTEMPC)) 
-  ALLOCATE (VOLM(NWB),NCOUNTCW(NWD),QWDFRAC(NWD),QSTRFRAC(NST,NBR),DYNSEL(NUMTEMPC),SELD(NUMTEMPC),NXSEL(NUMTEMPC),TEMP2(NUMTEMPC))       
+  ALLOCATE (VOLM(NWB),MONCTR(NUMTEMPC),NCOUNTCW(NWD),QWDFRAC(NWD),QSTRFRAC(NST,NBR),DYNSEL(NUMTEMPC),SELD(NUMTEMPC),NXSEL(NUMTEMPC),TEMP2(NUMTEMPC))       
   ALLOCATE (DYNSF(NUMTEMPC),MINWL(NUMTEMPC))    
   DYNSF=.FALSE.;MINWL=0.0
   
@@ -973,11 +995,14 @@ USE SELECTIVE1;   USE MAIN
                 15    JDAY1=0.0   
        ELSE
         OPEN  (IFILE,FILE='VOLUME_WB'//SEGNUM(1:L)//'.OPT',STATUS='UNKNOWN')
-        WRITE(IFILE,4315)
+        ! Write header with variable TEMPN (gfortran compatible)
+        WRITE(IFILE,'(A)', ADVANCE='NO') 'JDAY    VOLUME    '
+        DO J = 1, TEMPN
+          WRITE(IFILE,'(A)', ADVANCE='NO') 'VOLCRIT      '
+        END DO
+        WRITE(IFILE,'(A)') ''  ! End line
        ENDIF
       ENDDO
-      
-4315  FORMAT("JDAY    VOLUME    ",<TEMPN>("VOLCRIT      "))
 
 
 ! INITIALIZING STRUCTURE ELEVATION IF STRUCTURE
@@ -1328,12 +1353,34 @@ END IF
         DO JB=1,NBR
             IF(NSTR(JB) > 0)THEN
             IFILE=IFILE+1
-            WRITE (IFILE,'(F10.4,",",<NSTR(JB)>(F10.2,","),<NSTR(JB)>(F10.2,","),<NSTR(JB)>(F10.2,","))') JDAY,(TAVG(I,JB),I=1,NSTR(JB)),(QSTR(I,JB),I=1,NSTR(JB)),(ESTR(I,JB),I=1,NSTR(JB))
+            ! Write data with variable NSTR(JB) (gfortran compatible)
+            WRITE (IFILE,'(F10.4,",")', ADVANCE='NO') JDAY
+            DO I = 1, NSTR(JB)
+              WRITE (IFILE,'(F10.2,",")', ADVANCE='NO') TAVG(I,JB)
+            END DO
+            DO I = 1, NSTR(JB)
+              WRITE (IFILE,'(F10.2,",")', ADVANCE='NO') QSTR(I,JB)
+            END DO
+            DO I = 1, NSTR(JB)
+              WRITE (IFILE,'(F10.2,",")', ADVANCE='NO') ESTR(I,JB)
+            END DO
+            WRITE (IFILE,'(A)') ''  ! End line
             END IF
-         ENDDO          
+         ENDDO
           IF(NWD > 0)THEN
             IFILE=IFILE+1
-            WRITE (IFILE,'(F10.4,<NWD>F10.2,<NWD>F10.2,<NWD>F10.2)') JDAY,(TAVGW(I),I=1,NWD),(QWD(I),I=1,NWD),(EWD(I),I=1,NWD)
+            ! Write data with variable NWD (gfortran compatible)
+            WRITE (IFILE,'(F10.4)', ADVANCE='NO') JDAY
+            DO I = 1, NWD
+              WRITE (IFILE,'(F10.2)', ADVANCE='NO') TAVGW(I)
+            END DO
+            DO I = 1, NWD
+              WRITE (IFILE,'(F10.2)', ADVANCE='NO') QWD(I)
+            END DO
+            DO I = 1, NWD
+              WRITE (IFILE,'(F10.2)', ADVANCE='NO') EWD(I)
+            END DO
+            WRITE (IFILE,'(A)') ''  ! End line
           END IF
          ! TEMPERATURE CONTROL LOGIC 
 
@@ -1575,7 +1622,7 @@ ENTRY DEALLOCATE_SELECTIVE
 CLOSE(2900)
   DEALLOCATE (TCNELEV,TCJB,TCJS, TCELEV,TCTEMP,TCTEND,TCTSRT,NCOUNTC,TCISEG,TCKLAY,TCELEVCON,ELCONTSPL) 
   DEALLOCATE (TSPLTJB,TSPLTT,NOUTS,JSTSPLT,KSTRSPLT,TCYEARLY, JBMON,JSMON,TCNTR,TSPLTCNTR,JSTSPLTT) 
-  DEALLOCATE (VOLM,NCOUNTCW,QWDFRAC,QSTRFRAC,MINWL)    
+  DEALLOCATE (VOLM,MONCTR,NCOUNTCW,QWDFRAC,QSTRFRAC,MINWL)    
   DEALLOCATE(TEMPCRIT,VOLMC,DYNSEL,SELD,NXSEL,TEMP2,TSYEARLY,TSTEND,TSTSRT,DYNSF,DYNSPF,DYNSELSPLT,TEMP3,NXSELSPLT)
 RETURN   
 
@@ -1602,8 +1649,6 @@ Module Selective1USGS
   LOGICAL,       ALLOCATABLE, DIMENSION(:)     :: wd_active, share_flow
   LOGICAL,       ALLOCATABLE, DIMENSION(:,:)   :: no_flow, str_active
   LOGICAL, ALLOCATABLE, DIMENSION(:)           :: DYNSF
-  CHARACTER(30)                                :: CHAR30
-  REAL, ALLOCATABLE, DIMENSION(:)              :: MINWL   ! Minimum water level above centerline of outlet if TCELEVCON is ON
 
 End Module Selective1USGS
 
@@ -1646,7 +1691,18 @@ Subroutine SelectiveInitUSGS
       ELSE
         open  (ifile,file='str_br'//segnum(1:l)//'.csv',status='unknown')
         write (ifile,*)'Branch:,',jb,', # of structures:,',nstr(jb),', outlet temperatures'
-        write (ifile,'("      JDAY,",<nstr(jb)>(6x,"T(C),"),<nstr(jb)>(3x,"Q(m3/s),"),<nstr(jb)>(4x,"ELEVCL,"))')
+        ! Write header with variable nstr(jb) (gfortran compatible)
+        WRITE(ifile,'(A)', ADVANCE='NO') '      JDAY,'
+        DO I = 1, nstr(jb)
+          WRITE(ifile,'(6x,A)', ADVANCE='NO') 'T(C),'
+        END DO
+        DO I = 1, nstr(jb)
+          WRITE(ifile,'(3x,A)', ADVANCE='NO') 'Q(m3/s),'
+        END DO
+        DO I = 1, nstr(jb)
+          WRITE(ifile,'(4x,A)', ADVANCE='NO') 'ELEVCL,'
+        END DO
+        WRITE(ifile,'(A)') ''  ! End line
       ENDIF
     endif
   end do
@@ -1666,7 +1722,18 @@ Subroutine SelectiveInitUSGS
     ELSE
       open  (ifile,file='wd_out.opt',status='unknown')
       write (ifile,*)'Withdrawals: # of withdrawals:',nwd,' outlet temperatures'
-      write (ifile,'("      JDAY",<nwd>(6x,"T(C)"),<nwd>(3x,"Q(m3/s)"),<nwd>(4x,"ELEVCL"))')
+      ! Write header with variable nwd (gfortran compatible)
+      WRITE(ifile,'(A)', ADVANCE='NO') '      JDAY'
+      DO I = 1, nwd
+        WRITE(ifile,'(6x,A)', ADVANCE='NO') 'T(C)'
+      END DO
+      DO I = 1, nwd
+        WRITE(ifile,'(3x,A)', ADVANCE='NO') 'Q(m3/s)'
+      END DO
+      DO I = 1, nwd
+        WRITE(ifile,'(4x,A)', ADVANCE='NO') 'ELEVCL'
+      END DO
+      WRITE(ifile,'(A)') ''  ! End line
     ENDIF
   end if
 
@@ -1675,15 +1742,6 @@ Subroutine SelectiveInitUSGS
   READ (NUNIT,'(A)') AID1 
   IF (INDEX(AID1, "$") == 0) THEN
     CSVFORMAT=.FALSE.
-        ! Check for commas -- another sign that it is comma-delimited
-    READ (NUNIT,'(A)') CHAR30
-    DO J=1,30
-      IF (CHAR30(J:J)==',') THEN
-        CSVFORMAT=.TRUE.
-        EXIT
-      END IF
-    END DO
-    BACKSPACE(NUNIT)     
   ELSE
     CSVFORMAT=.TRUE.
   END IF
@@ -1716,8 +1774,8 @@ Subroutine SelectiveInitUSGS
   allocate (ncountc(nst,nbr),tciseg(numtempc),tcklay(numtempc),tcelevcon(numtempc))
   Allocate (tcyearly(numtempc), tcntr(numtempc))
   allocate (volm(nwb),ncountcw(nwd),qwdfrac(nwd),qstrfrac(nst,nbr),DYNSEL(numtempc),SELD(numtempc),NXSEL(numtempc),TEMP2(numtempc))
-  ALLOCATE(DYNSF(NUMTEMPC),MINWL(NUMTEMPC))
-  DYNSF=.FALSE.;MINWL=0.0
+  ALLOCATE(DYNSF(NUMTEMPC))
+  DYNSF=.FALSE.
   
   ncountc=0
   IF(CSVFORMAT) THEN
@@ -1762,10 +1820,10 @@ Subroutine SelectiveInitUSGS
   END IF
   do j=1,numtempc
     IF(CSVFORMAT) THEN
-      READ (NUNIT,*) AID1, tcelevcon(j),MINWL(j)
+      READ (NUNIT,*) AID1, tcelevcon(j)
       tcelevcon(j)=ADJUSTR(tcelevcon(j))
     ELSE
-    read (NUNIT,'(8x,a8,F8.0)') tcelevcon(j),MINWL(j)
+    read (NUNIT,'(8x,a8)') tcelevcon(j)
     END IF
   end do
   IF(CSVFORMAT) THEN
@@ -1966,11 +2024,14 @@ Subroutine SelectiveInitUSGS
 15    JDAY1=0.0
     ELSE
       open (ifile,file='Volume_wb'//segnum(1:l)//'.opt',status='unknown')
-      write(ifile,4315)
+      ! Write header with variable TEMPN (gfortran compatible)
+      WRITE(ifile,'(A)', ADVANCE='NO') 'jday    Volume    '
+      DO J = 1, TEMPN
+        WRITE(ifile,'(A)', ADVANCE='NO') 'Volcrit      '
+      END DO
+      WRITE(ifile,'(A)') ''  ! End line
     END IF
   end do
-
-4315  format("jday    Volume    ",<tempn>("Volcrit      "))
 
   if (tempc == '      ON') then
     do j=1,numtempc
@@ -3435,12 +3496,34 @@ Subroutine SelectiveUSGS
     do jb=1,nbr
       if (nstr(jb) > 0) then
         ifile=ifile+1
-        write (ifile,'(f10.4,",",<nstr(jb)>(f10.2,","),<nstr(jb)>(f10.2,","),<nstr(jb)>(f10.2,","))') jday,(tavg(i,jb),i=1,nstr(jb)),(qstr(i,jb),i=1,nstr(jb)),(estr(i,jb),i=1,nstr(jb))                   ! SW 8/28/2019
+        ! Write data with variable nstr(jb) (gfortran compatible)  ! SW 8/28/2019
+        WRITE (ifile,'(f10.4,",")', ADVANCE='NO') jday
+        DO i = 1, nstr(jb)
+          WRITE (ifile,'(f10.2,",")', ADVANCE='NO') tavg(i,jb)
+        END DO
+        DO i = 1, nstr(jb)
+          WRITE (ifile,'(f10.2,",")', ADVANCE='NO') qstr(i,jb)
+        END DO
+        DO i = 1, nstr(jb)
+          WRITE (ifile,'(f10.2,",")', ADVANCE='NO') estr(i,jb)
+        END DO
+        WRITE (ifile,'(A)') ''  ! End line
       end if
     end do
     if (nwd > 0) then
       ifile=ifile+1
-      write (ifile,'(f10.4,<nwd>f10.2,<nwd>f10.2,<nwd>f10.2)') jday,(tavgw(i),i=1,nwd),(qwd(i),i=1,nwd),(ewd(i),i=1,nwd)
+      ! Write data with variable nwd (gfortran compatible)
+      WRITE (ifile,'(f10.4)', ADVANCE='NO') jday
+      DO i = 1, nwd
+        WRITE (ifile,'(f10.2)', ADVANCE='NO') tavgw(i)
+      END DO
+      DO i = 1, nwd
+        WRITE (ifile,'(f10.2)', ADVANCE='NO') qwd(i)
+      END DO
+      DO i = 1, nwd
+        WRITE (ifile,'(f10.2)', ADVANCE='NO') ewd(i)
+      END DO
+      WRITE (ifile,'(A)') ''  ! End line
     end if
 
   ! computing reservoir volume and volume below 'tempcrit'
@@ -3580,7 +3663,7 @@ Subroutine SelectiveUSGS
               end do
             end if
           end if
-          if (tcelevcon(j) == '      ON' .and. tcnelev(j) > ncountc(js,jb) .and. estr(js,jb) > elws(ds(jb)-MINWL(J))) then
+          if (tcelevcon(j) == '      ON' .and. tcnelev(j) > ncountc(js,jb) .and. estr(js,jb) > elws(ds(jb))) then
             ncountc(js,jb) = ncountc(js,jb)+1
             estr(js,jb)    = tcelev(j,ncountc(js,jb))
           end if
@@ -3668,7 +3751,7 @@ Subroutine SelectiveUSGS
               end do
             end if
           end if
-          if (tcelevcon(j) == '      ON' .and. tcnelev(j) > ncountcw(jwd) .and. ewd(jwd) > elws(iwd(jwd))-MINWL(J)) then
+          if (tcelevcon(j) == '      ON' .and. tcnelev(j) > ncountcw(jwd) .and. ewd(jwd) > elws(iwd(jwd))) then
             ncountcw(jwd) = ncountcw(jwd)+1
             ewd(jwd)      = tcelev(j,ncountcw(jwd))
           end if
@@ -3684,7 +3767,7 @@ return
 ENTRY DEALLOCATE_SELECTIVEUSGS
   DEAllocate (tcnelev,tcjb,tcjs, tcelev,tctemp,tctend,tctsrt,ncountc,tciseg,tcklay,tcelevcon,elcontspl)
   DEAllocate (tspltjb,tspltt,nouts,jstsplt,kstrsplt,tcyearly, tcntr,tspltcntr)
-  DEallocate (volm,ncountcw,qwdfrac,qstrfrac,MINWL)
+  DEallocate (volm,ncountcw,qwdfrac,qstrfrac)
   DEallocate (tempcrit,volmc,DYNSEL,SELD,NXSEL,TEMP2,TSYEARLY,TSTEND,TSTSRT)
   deallocate (tsdepth, tstype, tsminfrac, tsprior, tsminhead, tsmaxhead, tsmaxflow, no_flow)
   deallocate (tsdynsel, tsseld, nxtssel, tstemp2, ewdsav, estrsav, share_flow, wd_active, str_active)

@@ -176,11 +176,11 @@
              TConc(nGas,LayerNum,SegNumI) = Ctot(nGas)
     
         End Do !nGas
-        
-        temp = INT4(NbubbLost)
-    
+
+        temp = INT(NbubbLost, KIND=4)  ! Replaced INT4 for gfortran compatibility
+
         FoundOpenArray = .FALSE.
-        MFTBubbReleased(SegNumI) = KIDINT(NbubbLost)
+        MFTBubbReleased(SegNumI) = INT(NbubbLost)  ! Replaced KIDINT for gfortran compatibility
         !nTry = 0
         Do nRelArr = 1, NumBubRelArr
             !nTry = nTry + 1
@@ -198,7 +198,7 @@
         End Do
         If(.NOT. FoundOpenArray)Then
             Write(CEMALogFilN,*)"Insufficient array size for bubbles release at JDAY = ", JDAY
-            Write(wrn,'(A,i10,a,f12.3,A)')"Sediment Diagenesis: Insufficient array size [NumBubRelArr=",NumBubRelArr,"] for bubbles release at JDAY = ", JDAY, " Run continued."
+            Write(wrn,'(A,f12.3,A)')"Sediment Diagenesis: Insufficient array size for bubbles release at JDAY = ", JDAY, " Run continued."
             WARNING_OPEN=.TRUE. 
             !Stop
         End if

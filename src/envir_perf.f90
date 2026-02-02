@@ -369,8 +369,12 @@ end do
         
 if(nac_e > 0)then
        open(CONE,file='envrprf_c'//I_INT//'.csv',status='unknown')
-       write(CONE,4000)(cname2(cn_e(jc)),jc=1,nac_e)
-4000 format(<nac_e>(a15,'_interval, Fraction_of_volume, '))
+       ! Write header with variable nac_e (gfortran compatible)
+       DO jc = 1, nac_e
+         WRITE(CONE,'(a15,"_interval, Fraction_of_volume, ")', ADVANCE='NO') cname2(cn_e(jc))
+       END DO
+       WRITE(CONE,'(A)') ''  ! End line
+!4000 format(<nac_e>(a15,'_interval, Fraction_of_volume, '))
        do jc=1,nac_e
         if(c_cnt(N,jc).gt.0.0)then
         c_avg(jc)=c_tot(N,jc)/c_cnt(N,jc)
@@ -386,19 +390,35 @@ if(nac_e > 0)then
           c_sum(jc)=c_sum(jc)+c_class(N,jc,i)/sumvolt(N)
           end do
        end do
+        ! Write data rows with variable nac_e (gfortran compatible)
         do i=1,numclass
-        write(CONE,126)(conc_c(jc,i),c_class(N,jc,i)/sumvolt(N),jc=1,nac_e)
+          DO jc = 1, nac_e
+            WRITE(CONE,'(f10.4,",",e12.4,",")', ADVANCE='NO') conc_c(jc,i),c_class(N,jc,i)/sumvolt(N)
+          END DO
+          WRITE(CONE,'(A)') ''  ! End line
         end do
         write(CONE,'(1x)')
-        write(CONE,'(<nac_e>("Sum_of_fractions,",f9.4,","))')(c_sum(jc),jc=1,nac_e)     
+        ! Write sum row
+        DO jc = 1, nac_e
+          WRITE(CONE,'("Sum_of_fractions,",f9.4,",")', ADVANCE='NO') c_sum(jc)
+        END DO
+        WRITE(CONE,'(A)') ''  ! End line
         write(CONE,'(1x)')
-        write(CONE,'(<nac_e>("Average,",e12.4,","))')(c_avg(jc),jc=1,nac_e)     
+        ! Write average row
+        DO jc = 1, nac_e
+          WRITE(CONE,'("Average,",e12.4,",")', ADVANCE='NO') c_avg(jc)
+        END DO
+        WRITE(CONE,'(A)') ''  ! End line     
         close(CONE)
       
-  if(nacd_e > 0)then     
+  if(nacd_e > 0)then
        open(CONE,file='envrprf_cd'//I_INT//'.csv',status='unknown')
-     write(CONE,4001)(cdname2(cdn_e(jc)),jc=1,nacd_e)
-4001 format(<nacd_e>(a15,'_interval, Fraction_of_volume,'))
+       ! Write header with variable nacd_e (gfortran compatible)
+       DO jc = 1, nacd_e
+         WRITE(CONE,'(a15,"_interval, Fraction_of_volume,")', ADVANCE='NO') cdname2(cdn_e(jc))
+       END DO
+       WRITE(CONE,'(A)') ''  ! End line
+!4001 format(<nacd_e>(a15,'_interval, Fraction_of_volume,'))
        do jc=1,nacd_e
         if(cd_cnt(N,jc).gt.0.0)then
         cd_avg(jc)=cd_tot(N,jc)/cd_cnt(N,jc)
@@ -415,13 +435,25 @@ if(nac_e > 0)then
           cd_sum(jc)=cd_sum(jc)+cd_class(N,jc,i)/sumvolt(N)
           end do
        end do
+        ! Write data rows with variable nacd_e (gfortran compatible)
         do i=1,numclass
-        write(CONE,124)(conc_cd(jc,i),cd_class(N,jc,i)/sumvolt(N),jc=1,nacd_e)
+          DO jc = 1, nacd_e
+            WRITE(CONE,'(f10.4,",",e12.4,",")', ADVANCE='NO') conc_cd(jc,i),cd_class(N,jc,i)/sumvolt(N)
+          END DO
+          WRITE(CONE,'(A)') ''  ! End line
         end do
         write(CONE,'(1x)')
-        write(CONE,'(<nacd_e>("Sum_of_fractions,",f9.4,","))')(cd_sum(jc),jc=1,nacd_e)
+        ! Write sum row
+        DO jc = 1, nacd_e
+          WRITE(CONE,'("Sum_of_fractions,",f9.4,",")', ADVANCE='NO') cd_sum(jc)
+        END DO
+        WRITE(CONE,'(A)') ''  ! End line
         write(CONE,'(1x)')
-        write(CONE,'(<nacd_e>("Average,",e12.4,","))')(cd_avg(jc),jc=1,nacd_e)
+        ! Write average row
+        DO jc = 1, nacd_e
+          WRITE(CONE,'("Average,",e12.4,",")', ADVANCE='NO') cd_avg(jc)
+        END DO
+        WRITE(CONE,'(A)') ''  ! End line
         close(CONE)
     endif
 endif
@@ -431,12 +463,13 @@ ENDDO
        !DEallocate(cc_e,c_int,c_top,cd_e,cd_int,cd_top,c_avg,cd_avg,cn_e,cdn_e)
        !DEALLOCATE(T_TOT,T_CNT,V_TOT,V_CNT,D_TOT,D_CNT,D_CLASS,VOLGL,SUMVOLT)
        
-124       format(<nacd_e>(f10.4,',',e12.4,','))
+! Obsolete FORMAT statements with variable repeat counts - replaced with loops for gfortran compatibility
+!124       format(<nacd_e>(f10.4,',',e12.4,','))
 125       format((f6.2,',',e12.4,','))
-126       format(<nac_e>(f10.4,',',e12.4,','))
-127       format(<nacd_e>(f10.4,',',e12.4,','))
-128       format(<nacd_e>(" 0, ",e12.4,','))
-129       format(<nac_e>(" 0, ",e12.4,','))
+!126       format(<nac_e>(f10.4,',',e12.4,','))
+!127       format(<nacd_e>(f10.4,',',e12.4,','))
+!128       format(<nacd_e>(" 0, ",e12.4,','))
+!129       format(<nac_e>(" 0, ",e12.4,','))
 
     end if
 

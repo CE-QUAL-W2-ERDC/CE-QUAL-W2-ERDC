@@ -46,30 +46,16 @@
 !***********************************************************************************************************************************
 !**                                                      Module Declaration                                                       **
 !***********************************************************************************************************************************
+! MODULE MSCLIB - Windows threading module removed for Unix/MacOS compilation
+! The following module has been disabled as it contains Windows-specific threading code
+! that is not needed for the console-based Unix version
+!
+! Original Windows threading variables preserved for compatibility:
 MODULE MSCLIB
-  INTEGER(8) :: HTHREAD
-  LOGICAL :: STOP_PUSHED, STOPPED, RESTART_PUSHED, RESTART_EXISTS
-  INCLUDE "RESOURCE.FD"
-  INTERFACE
-    FUNCTION $BEGINTHREADEX (SECURITY,STACK_SIZE,START_ADDRESS,ARGLIST,INITFLAG,THRDADDR)
-      USE DFWINTY, RENAMED => DLT
-      !DEC$ ATTRIBUTES C,ALIAS : "__BEGINTHREADEX" :: $BEGINTHREADEX
-      !DEC$ ATTRIBUTES REFERENCE,ALLOW_NULL        :: SECURITY
-      !DEC$ ATTRIBUTES REFERENCE,IGNORE_LOC        :: THRDADDR
-      INTEGER(UINT)                                :: $BEGINTHREADEX
-      INTEGER(UINT),               INTENT(IN)      :: STACK_SIZE, INITFLAG
-      INTEGER(PVOID),              INTENT(IN)      :: START_ADDRESS, ARGLIST
-      INTEGER(UINT),               INTENT(OUT)     :: THRDADDR
-      TYPE(T_SECURITY_ATTRIBUTES), INTENT(IN)      :: SECURITY
-    END FUNCTION $BEGINTHREADEX
-  END INTERFACE
-  INTERFACE
-    SUBROUTINE $ENDTHREADEX (RETVAL)
-      USE DFWINTY, RENAMED => DLT
-      !DEC$ ATTRIBUTES C, ALIAS : "__ENDTHREADEX" :: $ENDTHREADEX
-      INTEGER(UINT), INTENT(IN) :: RETVAL
-    END SUBROUTINE $ENDTHREADEX
-  END INTERFACE
+  LOGICAL :: STOP_PUSHED = .FALSE., STOPPED = .FALSE., RESTART_PUSHED = .FALSE., RESTART_EXISTS = .FALSE.
+  ! HTHREAD removed - not used in Unix version
+  ! RESOURCE.FD include removed - Windows resource file not needed
+  ! BEGINTHREADEX/ENDTHREADEX interfaces removed - Windows threading not used
 END MODULE MSCLIB
 MODULE PREC
   INTEGER, PARAMETER :: I2=SELECTED_INT_KIND (3)
@@ -99,7 +85,7 @@ MODULE GLOBAL
   REAL*4                                             :: W2VER=4.5
   REAL(R8),   PARAMETER                              :: DAY=86400.0D0,  NONZERO=1.0D-20, REFL=0.94D0, FRAZDZ=0.14D0, DZMIN=1.4D-7
   REAL(R8),   PARAMETER                              :: AZMIN=1.4D-6, RHOW=1000.0D0   !DZMAX=1.0D3,     
-  REAL(R8)                                           :: DLT,    DLTMIN, DLTTVD,DZMAX=1.0D2     
+  REAL(R8)                                           :: DLT,    DLTMIN, DLTTVD,DZMAX=1.0D2
   REAL(R8)                                           :: BETABR, START,  HMAX2,  CURRENT
   REAL(R8),   POINTER,            DIMENSION(:,:)     :: U,      W,      T2,     AZ,     RHO,    ST,     SB
   REAL(R8),   POINTER,            DIMENSION(:,:)     :: DLTLIM, VSH,    ADMX,   DM,     ADMZ,   HDG,    HPG,    GRAV
@@ -115,6 +101,7 @@ MODULE GLOBAL
   REAL,              ALLOCATABLE, DIMENSION(:,:,:)   :: ELLIM,  EPLIM,  ENLIM,  ESLIM
   INTEGER                                            :: W2ERR=33,  WRN=32
   INTEGER                                            :: IMX,    KMX,    NBR,    NTR,    NWD,    NWB,    NCT,    NBOD, NTR1     ! SW 2/17/2021
+  INTEGER                                            :: NHF                   !> sch 22Jan2026. Algal harvesting option variables. Number of segements with user-specified harvesting fractions, and a loop counter.
   INTEGER                                            :: NST,    NSP,    NGT,    NPI,    NPU,    NWDO,   NIKTSR, NUNIT
   INTEGER                                            :: JW,     JB,     JC,     IU,     ID,     KT,     I,      JJB
   INTEGER                                            :: NOD,    NDC=27, NAL,    NSS,    NHY=15, NFL=142,NEP,    NEPT
@@ -206,11 +193,13 @@ MODULE TVDC
   REAL(R8),              ALLOCATABLE, DIMENSION(:,:)     :: CIN,    CTR,    CDTR,   CPR,    CIND,   TUH,    TDH,    QOUT
   REAL(R8),              ALLOCATABLE, DIMENSION(:,:,:)   :: CUH,    CDH
   REAL(R8),              ALLOCATABLE, DIMENSION(:)       :: QWD,    QWDSAV                                                !SR 06/29/2021
+  REAL(R8),              ALLOCATABLE, DIMENSION(:)       :: FHA,    FHASAV                !> sch 29Jan2025. Algal harvesting option variable. Using withdrawal capability as template for harvesting option (see QWD, QWDSAV)
   INTEGER                                            :: NAC,    NOPEN
   INTEGER,           ALLOCATABLE, DIMENSION(:)       :: NACPR,  NACIN,  NACDT,  NACTR,  NACD,   CN, CDNN
   INTEGER,           ALLOCATABLE, DIMENSION(:,:)     :: TRCN,   INCN,   DTCN,   PRCN
   LOGICAL                                            :: CONSTITUENTS
   CHARACTER(72)                                      :: QGTFN,  QWDFN,  WSCFN,  SHDFN
+  CHARACTER(72)                                      :: HAFFN                             !> sch 29Jan2025. Algal harvesting option variable. Filename for time-series of user-specified algal harvesting fractions.
   CHARACTER(72),     ALLOCATABLE, DIMENSION(:)       :: METFN,  QOTFN,  QINFN,  TINFN,  CINFN,  QTRFN,  TTRFN,  CTRFN,  QDTFN
   CHARACTER(72),     ALLOCATABLE, DIMENSION(:)       :: TDTFN,  CDTFN,  PREFN,  TPRFN,  CPRFN,  EUHFN,  TUHFN,  CUHFN,  EDHFN
   CHARACTER(72),     ALLOCATABLE, DIMENSION(:)       :: EXTFN,  CDHFN,  TDHFN
@@ -220,6 +209,7 @@ MODULE TVDC
 END MODULE TVDC
 MODULE KINETIC
   USE PREC
+  REAL                                               :: O2LIM, ALG_O2LIM, ALG_MIN           !> sch 25Jan2025. Low DO - high algal mortality option variables. 
   REAL                                               :: KDO, PCO2,PCO2ATMPPM   ! SW 8/16/2020          
   REAL(R8)                                           :: O2CH4, O2H2S, O2FE2, O2MN2
   REAL(R8),    ALLOCATABLE, DIMENSION(:)             :: CoeffA_Turb, CoeffB_Turb,SECC_PAR 
@@ -311,6 +301,9 @@ MODULE KINETIC
   REAL(R8),          ALLOCATABLE, DIMENSION(:)       :: WIND10, CZ,     QC,     QERR
   REAL,              ALLOCATABLE, DIMENSION(:)       :: REAER,  RCOEF1, RCOEF2, RCOEF3, RCOEF4, DGPO2, MINKL
   REAL,              ALLOCATABLE, DIMENSION(:,:)     :: DO1,    DO2,    DO3,    GAMMA, F_NH3
+  REAL,              ALLOCATABLE, DIMENSION(:,:)     :: DO4,    DELT_LOW_DO       !> sch 25Jan2025. Low DO - high mortality option variables.
+  REAL,              ALLOCATABLE, DIMENSION(:)       :: CRIT_T, AM_LOW_DO         !> sch 25Jan2025. Low DO - high mortality option variables.
+  REAL,              ALLOCATABLE, DIMENSION(:)       :: CRIT_TIN                  !> sch 25Jan2025. Alternative N-fixation option variable.  !, CRIT_NFIX_ALG  ** minimum crop is sort of duplicative, not needed here. Discuss later. sh
   REAL,              ALLOCATABLE, DIMENSION(:,:)     :: SED,    FPSS,   FPFE, FE
   REAL,              ALLOCATABLE, DIMENSION(:,:)     :: SED1,sed2,SED1ic,sed2ic   ! cb 6/17/17
   REAL,              ALLOCATABLE, DIMENSION(:,:,:)   :: CBODD
@@ -422,6 +415,7 @@ END MODULE TDGAS
 MODULE LOGICC
   LOGICAL                                        :: SUSP_SOLIDS,        OXYGEN_DEMAND,    UPDATE_GRAPH,     INITIALIZE_GRAPH
   LOGICAL                                        :: WITHDRAWALS,        TRIBUTARIES,      GATES, PIPES  
+  LOGICAL                                        :: HARVESTING          !> sch 29Jan2025. Algal harvesting option logic switch.
   LOGICAL,           ALLOCATABLE, DIMENSION(:)   :: NO_WIND,            NO_INFLOW,        NO_OUTFLOW,       NO_HEAT
   LOGICAL,           ALLOCATABLE, DIMENSION(:)   :: UPWIND,             ULTIMATE,         FRESH_WATER,      SALT_WATER
   LOGICAL,           ALLOCATABLE, DIMENSION(:)   :: LIMITING_DLT,       TERM_BY_TERM,     MANNINGS_N,       PH_CALC
@@ -434,6 +428,7 @@ MODULE LOGICC
   LOGICAL,           ALLOCATABLE, DIMENSION(:)   :: DAM_INFLOW,         DAM_OUTFLOW                                    !TC 08/03/04
   LOGICAL,           ALLOCATABLE, DIMENSION(:)   :: INTERP_METEOROLOGY, INTERP_INFLOW,    INTERP_DTRIBS,    INTERP_TRIBS
   LOGICAL,           ALLOCATABLE, DIMENSION(:)   :: INTERP_WITHDRAWAL,  INTERP_HEAD,      INTERP_EXTINCTION
+!  LOGICAL,           ALLOCATABLE, DIMENSION(:)   :: INTERP_HARVESTING   !> sch 30Aug2025. Currently not used. Algal harvesting optin logic array switch for interpolation option.
   LOGICAL,           ALLOCATABLE, DIMENSION(:)   :: VISCOSITY_LIMIT,    CELERITY_LIMIT,   IMPLICIT_AZ,      TRAPEZOIDAL !SW 07/16/04
 !  LOGICAL,           ALLOCATABLE, DIMENSION(:)   :: HYDRO_PLOT,         CONSTITUENT_PLOT, DERIVED_PLOT
   LOGICAL,           ALLOCATABLE, DIMENSION(:)   :: INTERP_GATE     ! cb 8/13/2010
@@ -571,6 +566,7 @@ Module MAIN
   INTEGER       :: NBODCS, NBODCE, NBODPS, NBODPE, NBODNS, NBODNE, IBOD, JCB       ! cb 6/6/10
   INTEGER       :: JF,JA,JM,JE,JJZ,K,L3,L1,L2,NTAC,NDSP,NTACMX,NTACMN,JFILE,M
   INTEGER       :: KBP,JWR,JJJB,JDAYNX,NIT1,JWD,L,IUT,IDT    !,KTIP - NOT NEEDED SW 7/8/2024
+  INTEGER       :: JHA          !> sch 29Jan2025. Algal harvesting option variable. Used as a counter.
   INTEGER       :: INCRIS,IE,II,NDLT,NRS,INCR,IS,JAC
   REAL          :: JDAYTS, JDAY1, TMSTRT, TMEND,HMAX, DLXMAX,CELRTY,NXTVD,TTIME
   REAL(R8)      :: DLMR, TICE                        ! SW 4/19/10
@@ -606,6 +602,10 @@ Module MAIN
   CHARACTER(72) :: WDOFN,  RSOFN,  TSRFN, SEGNUM, LINE, SEGNUM2, TSRFN1
   LOGICAL       :: RETLOG, STANDING_BIOMASS_DECAY, PHBUFF_EXIST, WATER_AGE_ACTIVE ! SW 5/26/15  SR 7/27/2017
   LOGICAL       :: DYNPIPEADJUST            ! SW 2/18/2020
+  LOGICAL       :: LOW_DO_MORTALITY_EXIST                        !> sch 28Jan2025. Logic variables for low DO algal mortality option input file.
+  LOGICAL       :: NFIX_OPTION_EXIST                             !> sch 28Jan2025. Logic variable for N-fixation alternative option input file.
+  LOGICAL       :: HARVEST_OPTION_EXIST                          !> sch 28Jan2025. Logic variable for algal harvesting option initial input file.
+
   CHARACTER(2)  :: DYNPAD
   INTEGER       :: DYNPAD_SEG,DYNPAD_PIPE,DYNPIPELOG=9505
   
@@ -625,6 +625,7 @@ Module MAIN
   REAL,          ALLOCATABLE, DIMENSION(:)     :: CSUM,   CDSUM,  X1
   REAL,          ALLOCATABLE, DIMENSION(:)     :: RSOD,   RSOF,   DLTD,   DLTF,   DLTMAX
   REAL(R8),      ALLOCATABLE, DIMENSION(:)     :: QWDO
+  REAL(R8),      ALLOCATABLE, DIMENSION(:)     :: FHAO                    !>  sch 29Jan2025. Algal harvesting option variable.
   REAL(R8),      ALLOCATABLE, DIMENSION(:)     :: ICETHI, ALBEDO, HWI,    BETAI,  GAMMAI, ICEMIN, ICET2,  CBHE,   TSED
   REAL(R8),      ALLOCATABLE, DIMENSION(:)     :: FI,     SEDCI,  FSOD,   FSED,   AX,     RANLW,    T2I,    ELBOT,  DXI
   REAL(R8),      ALLOCATABLE, DIMENSION(:)     :: SEDCI1,SEDCI2,fsedc1,fsedc2 ! cb 6/7/17, Amaila
@@ -669,6 +670,7 @@ Module MAIN
   INTEGER,       ALLOCATABLE, DIMENSION(:)     :: NPOINT, NL,     KTQIN,  KBQIN, ilayer    ! SW 1/23/06
   INTEGER,       ALLOCATABLE, DIMENSION(:)     :: ITR,    KTTR,   KBTR,   JBTR
   INTEGER,       ALLOCATABLE, DIMENSION(:)     :: IWD,    KWD,    JBWD
+  INTEGER,       ALLOCATABLE, DIMENSION(:)     :: IHA,    JBHA         !>,   HAIC    !>  sch 24July2025. Algal harvesting option and associated variables related grid location (JBHA). Interpolation option (HAIC) no longer applicable. 
   INTEGER,       ALLOCATABLE, DIMENSION(:)     :: IWDO,   ITSR, JBTSR
   INTEGER,       ALLOCATABLE, DIMENSION(:)     :: ILAT,   JBDAM,  JSS
   INTEGER,       ALLOCATABLE, DIMENSION(:)     :: ICPL,   NACATD                                     

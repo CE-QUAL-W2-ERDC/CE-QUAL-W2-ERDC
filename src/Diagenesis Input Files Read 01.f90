@@ -33,13 +33,19 @@ Subroutine ReadBedConsolidationFiles(TempFilNum)
     Real(8) :: TimeJD1
     Real(8) :: TimeJD2
     Real(8) :: FactorInterp
-	Real(8) :: ConsolidRateTemp11(NumConsolidRegns),ConsolidRateTemp1(NumConsolidRegns),ConsolidRateTemp2(NumConsolidRegns)																													
-    
+	Real(8) :: ConsolidRateTemp11(NumConsolidRegns),ConsolidRateTemp1(NumConsolidRegns),ConsolidRateTemp2(NumConsolidRegns)
+    INTEGER :: ios  ! I/O status variable for EOF detection
+
     !Read Data
 	SkipLoop = .FALSE.
-	Do While(.NOT. SkipLoop .or. EOF(TempFilNum))	
-	  Read(TempFilNum,'(F8.0,<NumConsolidRegns>F8.0)')TimeJD1, (ConsolidRateTemp1(i),i=1,NumConsolidRegns)
-	  Read(TempFilNum,'(F8.0,<NumConsolidRegns>F8.0)')TimeJD2, (ConsolidRateTemp2(i),i=1,NumConsolidRegns)
+    ios = 0
+	Do While(.NOT. SkipLoop .and. ios == 0)
+	  ! Read first line: TimeJD1 and NumConsolidRegns values
+	  Read(TempFilNum,*,IOSTAT=ios) TimeJD1, (ConsolidRateTemp1(i),i=1,NumConsolidRegns)
+      IF (ios /= 0) EXIT
+	  ! Read second line: TimeJD2 and NumConsolidRegns values
+	  Read(TempFilNum,*,IOSTAT=ios) TimeJD2, (ConsolidRateTemp2(i),i=1,NumConsolidRegns)
+      IF (ios /= 0) EXIT
 
 	    If(JDay >= TimeJD1 .and. JDay <= TimeJD2)then
 		    SkipLoop = .TRUE.

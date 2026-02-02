@@ -77,8 +77,6 @@ Module Fishy
       INTEGER         VARYHVEL,VARYVVEL,FATPT
       INTEGER         FSNAG,NET,SND
       integer         nfishpcel,nfishseg,ncollector    ! SW 1/16/01
-      integer, allocatable, save, DIMENSION (:) :: TOTELE,TOTBRNN
-
 
       CHARACTER*2     AMPM
       CHARACTER*4     TXTNULLWQ,TXTNULLFF,TXTSTIMRULE,TXTVELORULE,&
@@ -111,8 +109,6 @@ Module Fishy
       LOGICAL, ALLOCATABLE, DIMENSION(:) :: NEXT_BRANCH
       
       INTEGER :: DIAGFN=8001, DATADEBUGFN=8002, BARCHRTXFN=8003,BARCHRTZFN=8004,FINALFN=8005,INITIALFN=8006, NMONITORS
-      REAL, ALLOCATABLE, DIMENSION(:) :: FXLOCINIT,FZLOCINIT,SEDVELINIT,DELAYDATEINIT
-
 
 End Module Fishy
 
@@ -124,13 +120,13 @@ End Module Fishy
 
       SUBROUTINE FISH
 
-     USE SURFHE; Use Fishy; Use GDAYC;  Use SCREENC; Use GEOMC; USE GLOBAL;   Use MAIN, only: IWD, FISH_PARTICLE_EXIST, KBI, RESTART_IN 
+     USE SURFHE; Use Fishy; Use GDAYC;  Use SCREENC; Use GEOMC; USE GLOBAL;   Use MAIN, only: IWD, FISH_PARTICLE_EXIST, KBI 
      IMPLICIT NONE
      
      REAL :: DZ
      INTEGER :: JF,KK,N, IW, GROUPLAST
 
-  IF (NIT.EQ.0 .or. restart_in) THEN             ! The very first time the Subroutine FISH is called; SW 6/2025
+  IF (NIT.EQ.0) THEN             ! The very first time the Subroutine FISH is called
       FXSENSPH=0.0;BXSENSPH=0.0;UZSENSPH=0.0;DZSENSPH=0.0;UFISH=0.0;VFISH=0.0;WFISH=0.0
 !***** Open 'Numerical Fish Surrogate' files
       Call Read_Fish_Data
@@ -639,7 +635,7 @@ End Module Fishy
                   end if
                else
                    if(fzloc.le.h(kti(fimp),fjr)+z(fimp))then
-                     if(z(fimp).gt.0.0 .AND. DEBUG)write(DATADEBUGFN,*)'Debug Error in vertical reflection:FN,I,K,JDAY',fn,fimp,fkmp,jday
+                     if(z(fimp).gt.0.0)write(DATADEBUGFN,*)'Debug Error in vertical reflection:FN,I,K,JDAY',fn,fimp,fkmp,jday
                    fzloc=(h(kti(fimp),fjr)+z(fimp))+h(fkmp,fjr)*(1-zsurrefl)
                    end if
                end if
@@ -722,7 +718,7 @@ End Module Fishy
         ELSE
         END IF
         IF (FKMP.LT.KTI(FIMP)) THEN
-          IF (DEBUG)WRITE(DATADEBUGFN,9350) FKMP,FZLOC,KTI(FIMP),(H(KTWBF,FJR)-Z(FIMP))
+          WRITE(DATADEBUGFN,9350) FKMP,FZLOC,KTI(FIMP),(H(KTWBF,FJR)-Z(FIMP))
  9350     FORMAT('FKMP.LT.KTI(FIMP) ==> FKMP=',I6,' FZLOC=',F10.3&
                  ,' KTI(FIMP)=',I6,' and (H(KTWBF)-Z(FIMP))=',F10.3)
         END IF
@@ -901,8 +897,8 @@ End Module Fishy
           END IF
   100   CONTINUE
         IF ((NR.GT.1).OR.(NL.GT.1)) THEN                        ! CHECK: Can only have one Branch join a segment from each side from the same side
-          IF (DEBUG)WRITE(DATADEBUGFN,*) 'ERROR: More than 1 branch joining segment'
-          IF (DEBUG)WRITE(DATADEBUGFN,9140) I
+          WRITE(DATADEBUGFN,*) 'ERROR: More than 1 branch joining segment'
+          WRITE(DATADEBUGFN,9140) I
  9140     FORMAT('ERROR occurred at segment ',I6)
           STOP
         ELSE
@@ -936,9 +932,9 @@ End Module Fishy
       ELSE
         TRIB = TRIB + 1
         IF (TRIB.GT.NBR) THEN                                 ! CHECK: TRIB can't be more
-          IF (DEBUG)WRITE(DATADEBUGFN,*) 'ERROR: Finding new FNBP in Subroutine'  !        than NBR # BRANCHES
-          IF (DEBUG)WRITE(DATADEBUGFN,*) 'ERROR: FIMP=',FIMP,' JDAY=',JDAY
-          IF (DEBUG)WRITE(DATADEBUGFN,*) 'FIMP=FIMP-1'
+          WRITE(DATADEBUGFN,*) 'ERROR: Finding new FNBP in Subroutine'  !        than NBR # BRANCHES
+          WRITE(DATADEBUGFN,*) 'ERROR: FIMP=',FIMP,' JDAY=',JDAY
+          WRITE(DATADEBUGFN,*) 'FIMP=FIMP-1'
           FIMP=FIMP-1
           GO TO 81
           !STOP
@@ -971,7 +967,7 @@ End Module Fishy
       WBDY = 0                                              ! WBDY = Water Body
    90 WBDY = WBDY + 1
       IF (WBDY.GT.NWB) THEN                                 ! CHECK: WBDY can't be more
-        IF (DEBUG)WRITE(DATADEBUGFN,*) 'ERROR: Finding current WB in Subroutine'!        than NWB
+        WRITE(DATADEBUGFN,*) 'ERROR: Finding current WB in Subroutine'!        than NWB
         STOP
       ELSE
       END IF
@@ -1016,7 +1012,7 @@ End Module Fishy
       Use FISHY
       USE GLOBAL
       Use GEOMC
-      Use SCREENC; USE MAIN, ONLY: KBI, RESTART_IN
+      Use SCREENC; USE MAIN, ONLY: KBI
       
       IMPLICIT NONE
 
@@ -1024,6 +1020,7 @@ End Module Fishy
       INTEGER     BRCHNN,KK,II,ND,ELE,EE,K
       INTEGER     TOTNN
       INTEGER     JOININGTRIB
+      integer, allocatable, save, DIMENSION (:) :: TOTELE,TOTBRNN
       logical, SAVE  ::  FEGRID
       REAL :: XDIST,ZDIST,VERTFLOW
 
@@ -1033,7 +1030,7 @@ End Module Fishy
       CHARACTER*4  :: FILE_SUFFIX='.dat'
       CHARACTER*12 FILENAME
 
-      IF (NIT.EQ.0 .OR. RESTART_IN)then   ! SW 6/2025
+      IF (NIT.EQ.0)then
       FEGRID = .FALSE.                  ! The first pass is used to set up the FE grid
       allocate(totele(NBR),totbrnn(NBR))    ! SW 1/14/01
       end if
@@ -1057,7 +1054,7 @@ End Module Fishy
             FILENAME=FILE_PREFIX//DTYP2//FILE_SUFFIX  !                64 Data Sets for Fish Display
  9220       FORMAT(I2)
             ELSE                                        ! CHECK
-            IF (DEBUG)WRITE(DATADEBUGFN,*) 'ERROR: Exceeded Maximum Number of TecPlot Data Sets ==> # Data Sets = # of Branches'
+            WRITE(DATADEBUGFN,*) 'ERROR: Exceeded Maximum Number of TecPlot Data Sets ==> # Data Sets = # of Branches'
             STOP
             END IF          
               
@@ -1112,7 +1109,7 @@ End Module Fishy
                                (MILTIME.LE.SKYNIGHT)) THEN             ! During the Evening, the Sky is
                         WATER = -25                                    !   ORANGE
                       ELSE                                             ! CHECK
-                        IF (DEBUG)WRITE(DATADEBUGFN,*) 'ERROR: MILTIME not Corresponding with Intervals Set for Determining Sky Color for TecPlot'
+                        WRITE(DATADEBUGFN,*) 'ERROR: MILTIME not Corresponding with Intervals Set for Determining Sky Color for TecPlot'
                         STOP
                       END IF
                     ELSE
@@ -1296,12 +1293,10 @@ End Module Fishy
                 II = NDINFO(NN,4)                                  ! PRE-CHECK CALCULATION
                 IF ((I.NE.II).OR.(K.NE.KK)) THEN                   ! CHECK
                   
-                  IF (DEBUG)THEN
                   WRITE(DATADEBUGFN,*) 'ERROR: Nodes not matching up for Constituent Interpolation'
                   write(DATADEBUGFN,*)'JDAY=',jday
                   write(DATADEBUGFN,*)'Waterbody=',wb,' Branch JB=', JB
                   write(DATADEBUGFN,*)'NN=',nn,' kk=',kk,' ii=',ii,' k=',k,' i=',i
-                  ENDIF
                   !STOP
                 !ELSE
                 END IF
@@ -1456,12 +1451,11 @@ End Module Fishy
                 NN = NN + 1                                        ! PRE-CHECK CALCULATION
                 KK = NDINFO(NN,3)                                  ! PRE-CHECK CALCULATION
                 II = NDINFO(NN,4)                                  ! PRE-CHECK CALCULATION
-                IF ((I.NE.II).OR.(K.NE.KK)) THEN 
-                 IF (DEBUG)THEN      ! CHECK
+                IF ((I.NE.II).OR.(K.NE.KK)) THEN                   ! CHECK
                   WRITE(DATADEBUGFN,*) 'ERROR: Nodes not matching up for Flowfield Interpolation'
                   write(DATADEBUGFN,*)'WB=',wb,' JB=', JB
                   write(DATADEBUGFN,*)'NN=',nn,' kk=',kk,' ii=',ii,' k=',k,' i=',i
-                ENDIF
+
                   !STOP
                 !ELSE
                 END IF
@@ -1746,7 +1740,7 @@ End Module Fishy
             FILENAME=FILE_PREFIX//FTYP2//FILE_SUFFIX  !                64 Data Sets for Fish Display
  9130       FORMAT(I2)
           ELSE                                        ! CHECK
-            IF (DEBUG)WRITE(DATADEBUGFN,*) 'ERROR: Exceeded Maximum Number of TecPlot Data Sets ==># Data Sets = # of Branches'
+            WRITE(DATADEBUGFN,*) 'ERROR: Exceeded Maximum Number of TecPlot Data Sets ==># Data Sets = # of Branches'
             STOP
           END IF                  
               
@@ -1945,12 +1939,18 @@ REAL ::  SNDYLFT, SNDYRGT,SNDZTOP,SNDZBOT, NETPULLHR
 INTEGER :: CATCH,DINT,DINTLAST,CATCHDEPTH,DOTALLY,TEMPTALLY, FIJ, JF, TAGGED, FVAR2,FVAR3, TAGGEDDEPTH, II
 
 
-! final fish output
+! final fish output - header for FINALFN
+   WRITE(FINALFN,'(A)', ADVANCE='NO') 'Part#,Seg#,XLocationwithinSegmentfromUpstreamSide(m),Layer#,VerticalDistfromTop(m),LateralDistfromLeftBank,Branch#,ParticleInModel(=0),JDAYleftsystem,DetentionTime(days),RemovalMechanism,SedVelocity(m/d),DateStart,'
    IF(NMONITORS<10)THEN
-       write(FINALFN,'(A214,<NMONITORS>(A11,I1,","))')'Part#,Seg#,XLocationwithinSegmentfromUpstreamSide(m),Layer#,VerticalDistfromTop(m),LateralDistfromLeftBank,Branch#,ParticleInModel(=0),JDAYleftsystem,DetentionTime(days),RemovalMechanism,SedVelocity(m/d),DateStart,',('MonitorDate',I,I=1,NMONITORS) !Monitor2Date, Monitor3Date'
+     DO I = 1, NMONITORS
+       WRITE(FINALFN,'(A11,I1,",")', ADVANCE='NO') 'MonitorDate', I
+     END DO
    ELSE
-       write(FINALFN,'(A214,<NMONITORS>(A11,I2,","))')'Part#,Seg#,XLocationwithinSegmentfromUpstreamSide(m),Layer#,VerticalDistfromTop(m),LateralDistfromLeftBank,Branch#,ParticleInModel(=0),JDAYleftsystem,DetentionTime(days),RemovalMechanism,SedVelocity(m/d),DateStart,',('MonitorDate',I,I=1,NMONITORS) !Monitor2Date, Monitor3Date'
+     DO I = 1, NMONITORS
+       WRITE(FINALFN,'(A11,I2,",")', ADVANCE='NO') 'MonitorDate', I
+     END DO
    ENDIF
+   WRITE(FINALFN,'(A)') ''  ! End line
    
     do jf=1,nfish     
     write(FINALFN,'(i7,",",1x,10(f10.3,","),f8.4,",",f12.4,",",100(f10.3,","))')jf,fishes(jf,1),fishes(jf,2),fishes(jf,3),fishes(jf,4),fishes(jf,5),fishes(jf,6),fishes(jf,12),fishes(jf,14),fishes(jf,15),fishes(jf,16),sedvel(jf),delaydate(jf),(tmonitor(jf,ii),ii=1,nmonitors)
@@ -1960,7 +1960,7 @@ INTEGER :: CATCH,DINT,DINTLAST,CATCHDEPTH,DOTALLY,TEMPTALLY, FIJ, JF, TAGGED, FV
     CALL HISTOGRAM_OUTPUT
     close(FINALFN)
 ! End fish output section
-    CALL PARTICLE_DEALLOCATE                                           !FISH
+                                                             !FISH
 
       Return                                                               !FISH
 End Subroutine FishOutput
@@ -1972,6 +1972,7 @@ Subroutine Read_Fish_Data
 Use Fishy; Use SCREENC, ONLY:JDAY; USE MAIN, ONLY: FISH_PARTICLE_EXIST 
 IMPLICIT NONE
 
+REAL, ALLOCATABLE, DIMENSION(:) :: FXLOCINIT,FZLOCINIT,SEDVELINIT,DELAYDATEINIT
 character*3 ALINE
 INTEGER :: NG,I,J,NA, IDEBUG, NFISHLAST,ILINEAR,HTSTBOT,HTSTSIDE
 
@@ -2438,19 +2439,39 @@ REAL :: V1,V2,R,FAC,GSET,GASDEV
 
         open(CONE,file='envrprf_t_particle.csv',status='unknown')
         write(CONE,*)'Temperature interval,Fraction of time,Number of Particles:',nfish,','
-        write(CONE,'("Interval,",<NFISH>("Particle",i4,","))')(I,I=1,NFISH)   !"Interval,",<NFISH>("Particle",i4,",")
+        ! Header line for temperature histogram
+        WRITE(CONE,'(A)', ADVANCE='NO') 'Interval,'
+        DO I = 1, NFISH
+          WRITE(CONE,'("Particle",i4,",")', ADVANCE='NO') I
+        END DO
+        WRITE(CONE,'(A)') ''  ! End line
         temp_c=temp_top
           do i=1,numclass
-          write(CONE,125)temp_c,(t_class(N,i)/sumvolt(N),N=1,NFISH)
+          ! Data line - format 125 replacement: temp_c, then NFISH values
+          WRITE(CONE,'(f8.2,",")', ADVANCE='NO') temp_c
+          DO N = 1, NFISH
+            WRITE(CONE,'(e12.4,",")', ADVANCE='NO') t_class(N,i)/sumvolt(N)
+          END DO
+          WRITE(CONE,'(A)') ''  ! End line
           temp_c=temp_c-temp_int
           DO N=1,NFISH
           t_sum(N)=t_sum(N)+t_class(N,i)/sumvolt(N)
           ENDDO
           end do
         write(CONE,'(1x)')
-        write(CONE,'(" Sum of fractions, ",<nfish>(e12.4,","))')(t_sum(N),N=1,NFISH)
+        ! Sum of fractions line
+        WRITE(CONE,'(A)', ADVANCE='NO') ' Sum of fractions, '
+        DO N = 1, NFISH
+          WRITE(CONE,'(e12.4,",")', ADVANCE='NO') t_sum(N)
+        END DO
+        WRITE(CONE,'(A)') ''  ! End line
         write(CONE,'(1x)')
-        write(CONE,'(" Average, ",<nfish>(e12.4,","))')(t_avg(N), N=1,NFISH)
+        ! Average line
+        WRITE(CONE,'(A)', ADVANCE='NO') ' Average, '
+        DO N = 1, NFISH
+          WRITE(CONE,'(e12.4,",")', ADVANCE='NO') t_avg(N)
+        END DO
+        WRITE(CONE,'(A)') ''  ! End line
         close(CONE)
         end if
 
@@ -2464,19 +2485,39 @@ REAL :: V1,V2,R,FAC,GSET,GASDEV
           ENDDO
         open(CONE,file='envrprf_v_particle.csv',status='unknown')
         write(CONE,*)'Velocity interval,Fraction of volume,Number of Particles:',nfish,','
-        write(CONE,'("Interval,",<NFISH>("Particle",i4,","))')(I,I=1,NFISH)
+        ! Header line for velocity histogram
+        WRITE(CONE,'(A)', ADVANCE='NO') 'Interval,'
+        DO I = 1, NFISH
+          WRITE(CONE,'("Particle",i4,",")', ADVANCE='NO') I
+        END DO
+        WRITE(CONE,'(A)') ''  ! End line
         vel_c=vel_top
           do i=1,numclass
-          write(CONE,125)vel_c,(v_class(N,i)/sumvolt(N),N=1,NFISH)
+          ! Data line - format 125 replacement: vel_c, then NFISH values
+          WRITE(CONE,'(f8.2,",")', ADVANCE='NO') vel_c
+          DO N = 1, NFISH
+            WRITE(CONE,'(e12.4,",")', ADVANCE='NO') v_class(N,i)/sumvolt(N)
+          END DO
+          WRITE(CONE,'(A)') ''  ! End line
           vel_c=vel_c-vel_int
           DO N=1,NFISH
           v_sum(N)=v_sum(N)+v_class(N,i)/sumvolt(N)
           ENDDO
           end do
         write(CONE,'(1x)')
-        write(CONE,'(" Sum of fractions, ",<nfish>(e12.4,","))')(v_sum(N),N=1,NFISH)
+        ! Sum of fractions line
+        WRITE(CONE,'(A)', ADVANCE='NO') ' Sum of fractions, '
+        DO N = 1, NFISH
+          WRITE(CONE,'(e12.4,",")', ADVANCE='NO') v_sum(N)
+        END DO
+        WRITE(CONE,'(A)') ''  ! End line
         write(CONE,'(1x)')
-        write(CONE,'(" Average, ",<nfish>(e12.4,","))')(v_avg(N),N=1,NFISH)
+        ! Average line
+        WRITE(CONE,'(A)', ADVANCE='NO') ' Average, '
+        DO N = 1, NFISH
+          WRITE(CONE,'(e12.4,",")', ADVANCE='NO') v_avg(N)
+        END DO
+        WRITE(CONE,'(A)') ''  ! End line
         close(CONE)
         end if
         
@@ -2491,50 +2532,46 @@ REAL :: V1,V2,R,FAC,GSET,GASDEV
           END DO
         open(CONE,file='envrprf_depth_particle.csv',status='unknown')
         write(CONE,*)'Depth interval,Fraction of time,Number of Particles:',nfish,','
-        write(CONE,'("Interval,",<NFISH>("Particle",i4,","))')(I,I=1,NFISH)
+        ! Header line for depth histogram
+        WRITE(CONE,'(A)', ADVANCE='NO') 'Interval,'
+        DO I = 1, NFISH
+          WRITE(CONE,'("Particle",i4,",")', ADVANCE='NO') I
+        END DO
+        WRITE(CONE,'(A)') ''  ! End line
         d_c=d_top
           do i=1,numclass
-          write(CONE,125)d_c,(d_class(N,i)/d_cnt(N),n=1,nfish)
+          ! Data line - format 125 replacement: d_c, then NFISH values
+          WRITE(CONE,'(f8.2,",")', ADVANCE='NO') d_c
+          DO N = 1, NFISH
+            WRITE(CONE,'(e12.4,",")', ADVANCE='NO') d_class(N,i)/d_cnt(N)
+          END DO
+          WRITE(CONE,'(A)') ''  ! End line
           d_c=d_c-d_int
           DO N=1,NFISH
           d_sum(N)=d_sum(N)+d_class(N,i)/d_cnt(N)
           ENDDO
           end do
         write(CONE,'(1x)')
-        write(CONE,'(" Sum of fractions, ",<nfish>(e12.4,","))')(d_sum(N), N=1,NFISH)
+        ! Sum of fractions line
+        WRITE(CONE,'(A)', ADVANCE='NO') ' Sum of fractions, '
+        DO N = 1, NFISH
+          WRITE(CONE,'(e12.4,",")', ADVANCE='NO') d_sum(N)
+        END DO
+        WRITE(CONE,'(A)') ''  ! End line
         write(CONE,'(1x)')
-        write(CONE,'(" Average, ",<nfish>(e12.4,","))')(d_avg(N), N=1,NFISH)
+        ! Average line
+        WRITE(CONE,'(A)', ADVANCE='NO') ' Average, '
+        DO N = 1, NFISH
+          WRITE(CONE,'(e12.4,",")', ADVANCE='NO') d_avg(N)
+        END DO
+        WRITE(CONE,'(A)') ''  ! End line
         close(CONE)
         end if
 
-125       format((f8.2,',',<NFISH>(e12.4,',')))
+
+
+!125       format((f8.2,',',<NFISH>(e12.4,',')))  ! COMMENTED OUT - gfortran incompatible
 
     RETURN
     END SUBROUTINE HISTOGRAM_OUTPUT
-   SUBROUTINE PARTICLE_DEALLOCATE
-    USE Fishy
-
-    DEAllocate(FISHES,WQFIELD,FLOWFIELD,NETCATCH,SNDCATCH,RIMPBR,LIMPBR, NODES,&
-           NDINFO,CORNERS,LASTFIELD,BRCHFISH,NBRF)
-    DEALLOCATE(NEXT_BRANCH,FNEXT)
-    DEallocate(totele,totbrnn)  
-    DEAllocate(ifish,ifisht,ifishb,delaydateinit,fxlocinit,fzlocinit,sedvelinit) 
-     DEALLOCATE (GROUP,FXLOCI,FZLOCI,DELAYDATE,SEDVEL)
-        IF(NUMCLASS /= 0)DEALLOCATE(SUMVOLT)
-        IF(VEL_INT /= 0.0)THEN
-            DEallocate (v_class)
-            DEALLOCATE(V_TOT,V_CNT,V_SUM,V_AVG)   
-        ENDIF
-        IF(TEMP_INT /= 0.0)THEN
-             DEALLOCATE (T_TOT,T_CNT,T_SUM,T_AVG)
-             DEallocate (t_class)
-        ENDIF
-        
-        IF(D_INT /= 0.0)THEN
-            DEALLOCATE (D_TOT,D_CNT,D_SUM,D_AVG)
-            DEallocate(d_class)
-        ENDIF
-           DEALLOCATE(IMONITOR,TMONITOR,XSHIFTMONITOR,MONITORONOFF)
-
-   RETURN
-   END SUBROUTINE PARTICLE_DEALLOCATE
+   

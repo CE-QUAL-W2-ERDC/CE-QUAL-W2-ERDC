@@ -43,9 +43,15 @@ MODULE modSYSTDG
    CHARACTER(8) :: AID1
    LOGICAL      :: CSVFORMAT
    INTEGER      :: I, IG, N_POW, N_FLD, N_SPB
+      CHARACTER(500) :: FMT_STR  ! Format string for variable NGT
       NXTSPLIT3=TMSTRT
       open  (88888, FILE='TDG_output.csv', status='unknown')
-      WRITE (88888, '(A, <NGT>("QGT-",I2,","))')'JDAY,TDG_TDG,SUM_QGT2,',(IG, IG = 1, NGT)
+      ! Write header with variable number of gates (gfortran compatible)
+      WRITE (88888, '(A)', ADVANCE='NO') 'JDAY,TDG_TDG,SUM_QGT2,'
+      DO IG = 1, NGT
+        WRITE (88888, '("QGT-",I2,",")', ADVANCE='NO') IG
+      END DO
+      WRITE (88888, '(A)') ''  ! End line
       NRO=0                                                 
       POWNO = 0
       FLNO  = 0
@@ -425,7 +431,12 @@ IF(SYSTDGC == '     OFF')GO TO 100          ! DO NOT ALLOCATE ARRAYS IF WE ARE N
              DO ig = 1, NGT
                 SUM_QGT2=SUM_QGT2+QGT(ig)
              END DO
-             WRITE (88888, '(A, F10.3, 2A, F10.3, A, F9.3, A, <NGT>(F9.3,","))')' ',JDAY,',  ', ', ',TDG_TDG,',  ',SUM_QGT2,',  ',(QGT(ig), ig = 1, NGT)
+             ! Write data with variable number of gates (gfortran compatible)
+             WRITE (88888, '(A, F10.3, 2A, F10.3, A, F9.3, A)', ADVANCE='NO')' ',JDAY,',  ', ', ',TDG_TDG,',  ',SUM_QGT2,',  '
+             DO ig = 1, NGT
+               WRITE (88888, '(F9.3,",")', ADVANCE='NO') QGT(ig)
+             END DO
+             WRITE (88888, '(A)') ''  ! End line
              NXTSPLIT3 = NXTSPLIT3 + 1.0
           END IF
        END IF                                                                                                   ! END IF Q_SUM/=0.0

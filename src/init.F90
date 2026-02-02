@@ -18,7 +18,9 @@ USE GLOBAL;     USE NAMESC; USE GEOMC;  USE LOGICC; USE PREC;  USE SURFHE;  USE 
 !**                                                 Task 1.1.1: Zero Variables                                                    **
 !***********************************************************************************************************************************
   IceQSS = 0.0d00; WATER_AGE_ACTIVE=.FALSE.   ! SR 7/27/2017
-  ATM_DEP_LOADING=0.0;IN_TOXIN=0.0;AGZ=0.0  ! SW 8/2024
+  IF(ALLOCATED(ATM_DEP_LOADING)) ATM_DEP_LOADING=0.0
+  IF(ALLOCATED(IN_TOXIN)) IN_TOXIN=0.0
+  IF(ALLOCATED(AGZ)) AGZ=0.0  ! SW 8/2024
   KB     = 0;   KBR    = 0;   NAC    = 0;   NTAC   = 0;   NACD   = 0;   NACIN  = 0;   NACTR  = 0;   NACDT  = 0;   NACPR  = 0
   NDSP   = 0;   HMAX   = 0;   KBMAX  = 0;   DLXMAX = 0;   KBQIN  = 0;   KTQIN  = 0;   QGT    =0.0;  QSP    =0.0    ! SW 8/26/15 Initialize Qgt and Qsp for screen output on restart
   NAF    = 0;   TISS   = 0.0;  CSHE   = 0.0; CIN    = 0.0; TIN    = 0.0; EV     = 0.0; NACATD=0
@@ -33,17 +35,45 @@ USE GLOBAL;     USE NAMESC; USE GEOMC;  USE LOGICC; USE PREC;  USE SURFHE;  USE 
   AVHR   = 0.0D0; GRAV   = 0.0D0; KBP    = 0  ; DZT    = 0.0D0; AZT    = 0.0D0; KFJW   = 0.0; QC     = 0.0D0; YSS    = 0.0; YSTS   = 0.0
   QWD    = 0.0D0; QDTR   = 0.0D0; TTR    = 0.0; CTR    = 0.0; TDTR   = 0.0; QOLDS  = 0.0D0; DTPS   = 0.0; VSTS   = 0.0; VSS    = 0.0
   EGT2   = 0.0; HAB    = 100.0; sedpinflux=0.0; sedninflux=0.0 ; FPSS=0.0; FPFE=0.0  ! SR 3/2019
-  RS=0.0;RN=0.0;RB=0.0;RE=0.0;RC=0.0;RANLW=0.0;TICAP=0.0;TICZR=0.0;TICEP=0.0;TICMC=0.0; VOL=0.0;QERR=0.0             
+  RS=0.0;RN=0.0;RB=0.0;RE=0.0;RC=0.0;RANLW=0.0;TICAP=0.0;TICZR=0.0;TICEP=0.0;TICMC=0.0; VOL=0.0;QERR=0.0
   sdfirstadd=.true.   ! cb 9/3/17
   BR_NOTECPLOT=.TRUE.    ! SW 8/27/2019
-  QWDSAV = 0.0D0;                                                                                                     !SR 06/29/2021
+  IF(ALLOCATED(QWDSAV)) QWDSAV = 0.0D0                                                                                !SR 06/29/2021
+  IF(ALLOCATED(FHA))    FHA    = 0.0D0
+  IF(ALLOCATED(FHASAV)) FHASAV = 0.0D0
+  IF(ALLOCATED(JBHA))   JBHA   = 0                   !> sch 22Jan2026. Algal harvesting option variables.
+
   IF (.NOT. RESTART_IN) THEN
-    BR_INACTIVE=.FALSE.; WARNING_OPEN          = .FALSE.;JDMIN=0; EPC=0.0; NXTMUK=TMSTRT 
+    BR_INACTIVE=.FALSE.; WARNING_OPEN          = .FALSE.;JDMIN=0; EPC=0.0; NXTMUK=TMSTRT
     NSPRF  = 0;   IZMIN  = 0;   KTWB   = 2;   KMIN   = 1;   IMIN   = 1; NH3GASLOSS=0.0
     T1     = 0.0D0; T2     = 0.0D0; C1     = 0.0D0; C2     = 0.0D0; CD     = 0.0; CIN    = 0.0; C1S    = 0.0; KF     = 0.0; CMBRT  = 0.0
-    KFS    = 0.0; U      = 0.0D0; W      = 0.0D0; SU     = 0.0D0; SW     = 0.0D0; SAZ    = 0.0D0; AZ     = 0.0D0; ESBR   = 0.0; EPD    = 0.0
-    ETBR   = 0.0; EBRI   = 0.0; DLTLIM = 0.0; VOLEV  = 0.0; VOLPR  = 0.0; VOLDT  = 0.0; VOLWD  = 0.0; CURRENT= 0.0; VOLICE =0.0; ICEBANK=0.0
-    VOLUH  = 0.0; VOLDH  = 0.0; VOLIN  = 0.0; VOLOUT = 0.0; VOLSBR = 0.0; VOLTRB = 0.0; TSSS   = 0.0; TSSB   = 0.0; EF     = 0.0
+    KFS    = 0.0
+    U      = 0.0D0
+    W      = 0.0D0
+    SU     = 0.0D0
+    SW     = 0.0D0
+    SAZ    = 0.0D0
+    AZ     = 0.0D0
+    ESBR   = 0.0; EPD    = 0.0
+    ETBR   = 0.0
+    EBRI   = 0.0
+    DLTLIM = 0.0
+    VOLEV  = 0.0
+    VOLPR  = 0.0
+    VOLDT  = 0.0
+    VOLWD  = 0.0
+    CURRENT= 0.0
+    VOLICE =0.0
+    ICEBANK=0.0
+    VOLUH  = 0.0
+    VOLDH  = 0.0
+    VOLIN  = 0.0
+    VOLOUT = 0.0
+    VOLSBR = 0.0
+    VOLTRB = 0.0
+    TSSS   = 0.0
+    TSSB   = 0.0
+    EF     = 0.0
     TSSEV  = 0.0; TSSPR  = 0.0; TSSTR  = 0.0; TSSDT  = 0.0; TSSWD  = 0.0; TSSUH  = 0.0; TSSDH  = 0.0; TSSIN  = 0.0; CSSK   = 0.0
     TSSOUT = 0.0; TSSICE = 0.0; TSSUH1 = 0.0; TSSUH2 = 0.0; CSSUH1 = 0.0; CSSUH2 = 0.0; TSSDH1 = 0.0; TSSDH2 = 0.0
     CSSDH1 = 0.0; CSSDH2 = 0.0; QIND   = 0.0; TIND   = 0.0; CIND   = 0.0; SAVH2  = 0.0; SAVHR  = 0.0; VOLUH2 = 0.0
@@ -96,6 +126,7 @@ USE GLOBAL;     USE NAMESC; USE GEOMC;  USE LOGICC; USE PREC;  USE SURFHE;  USE 
   WEIR_CALC             =  NIW > 0; GATES    = NGT > 0; PIPES       = NPI > 0
   PUMPS                 =  NPU > 0; SPILLWAY = NSP > 0; TRIBUTARIES = NTR > 0
   WITHDRAWALS           =  NWD > 0
+  HARVESTING            =  NHF > 0               !> sch 29Jan2025. Algal harvesting option. Set algal harvesting true if at least one harvesting segment location has been read.
   VOLUME_BALANCE        = VBC         == '      ON'
   PLACE_QIN             = PQC         == '      ON'; EVAPORATION        = EVC    == '      ON'
   ENERGY_BALANCE        = EBC         == '      ON'; RH_EVAP            = RHEVC  == '      ON'
@@ -103,6 +134,7 @@ USE GLOBAL;     USE NAMESC; USE GEOMC;  USE LOGICC; USE PREC;  USE SURFHE;  USE 
   INTERP_TRIBS          = TRIC        == '      ON'; INTERP_DTRIBS      = DTRIC  == '      ON'
   INTERP_HEAD           = HDIC        == '      ON'; INTERP_INFLOW      = QINIC  == '      ON'
   INTERP_OUTFLOW        = STRIC       == '      ON'; INTERP_WITHDRAWAL  = WDIC   == '      ON'
+! INTERP_HARVESTING  = HAIC   == 1               !> sch 30Aug2025 !> sch 30Aug2025. Currently not used. Save for possible later use. Algal harvesting option ... initialize interpolation option
   INTERP_GATE           = GTIC        == '      ON'       ! cb 8/13/2010
   !INTERP_METEOROLOGY    = METIC       == '      ON'; DOWNSTREAM_OUTFLOW = WDOC   == '      ON'
   INTERP_METEOROLOGY    = METIC       == '      ON'

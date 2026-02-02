@@ -53,7 +53,7 @@ if(restart_in)then
         JDAY1=0.0
         REWIND (FISHHABFN)
         READ   (FISHHABFN,'(///)')
-        DO j=1,IFISH
+        DO I=1,IFISH
         READ(FISHHABFN,*)
         ENDDO
         READ(FISHHABFN,'(//)',END=106)
@@ -77,7 +77,7 @@ if(restart_in)then
          JDAY1=0.0
          REWIND (JWFILE)
         READ   (JWFILE,'(///)')
-        DO j=1,IFISH
+        DO I=1,IFISH
         READ(JWFILE,*)
         ENDDO
         READ(JWFILE,'(//)',END=110)
@@ -100,7 +100,7 @@ if(restart_in)then
             JDAY1=0.0
             REWIND (JBFILE)
             READ   (JBFILE,'(///)')
-            DO j=1,IFISH
+            DO I=1,IFISH
             READ(JBFILE,*)
             ENDDO
             READ(JBFILE,'(//)',END=111)
@@ -162,11 +162,21 @@ else
         enddo
         write(FISHHABFN,*)
         IF(DOVOL=='ON')THEN
-        write(FISHHABFN,101)(trim(fishname(i)),trim(fishname(i)),i=1,ifish)
-101     format('JDAY,',<ifish>('%VOL-',A,',','HAB-VOL(m3)-',A,','),'DO_VOL(m3)<=1mg/L',',')   
+        ! Write header with variable ifish (gfortran compatible)
+        WRITE(FISHHABFN,'("JDAY,")', ADVANCE='NO')
+        DO i = 1, ifish
+          WRITE(FISHHABFN,'("%VOL-",A,",","HAB-VOL(m3)-",A,",")', ADVANCE='NO') trim(fishname(i)),trim(fishname(i))
+        END DO
+        WRITE(FISHHABFN,'(A)') "DO_VOL(m3)<=1mg/L,"
+!101     format('JDAY,',<ifish>('%VOL-',A,',','HAB-VOL(m3)-',A,','),'DO_VOL(m3)<=1mg/L',',')
         ELSE
-        write(FISHHABFN,100)(trim(fishname(i)),trim(fishname(i)),i=1,ifish)
-100     format('JDAY,',<ifish>('%VOL-',A,',','HAB-VOL(m3)-',A,','))
+        ! Write header with variable ifish (gfortran compatible)
+        WRITE(FISHHABFN,'("JDAY,")', ADVANCE='NO')
+        DO i = 1, ifish
+          WRITE(FISHHABFN,'("%VOL-",A,",","HAB-VOL(m3)-",A,",")', ADVANCE='NO') trim(fishname(i)),trim(fishname(i))
+        END DO
+        WRITE(FISHHABFN,'(A)') ''
+!100     format('JDAY,',<ifish>('%VOL-',A,',','HAB-VOL(m3)-',A,','))
         ENDIF
             
         jbfile=jbfile1;jwfile=jwfile1       
@@ -188,10 +198,20 @@ else
                 enddo
                 IF(DOVOL=='ON')THEN
                 write(JWFILE,*)
-                write(JWFILE,101)(trim(fishname(i)),trim(fishname(i)),i=1,ifish)   
+                ! Write header with variable ifish (gfortran compatible)
+                WRITE(JWFILE,'("JDAY,")', ADVANCE='NO')
+                DO i = 1, ifish
+                  WRITE(JWFILE,'("%VOL-",A,",","HAB-VOL(m3)-",A,",")', ADVANCE='NO') trim(fishname(i)),trim(fishname(i))
+                END DO
+                WRITE(JWFILE,'(A)') "DO_VOL(m3)<=1mg/L,"
                     ELSE
                 write(JWFILE,*)
-                write(JWFILE,100)(trim(fishname(i)),trim(fishname(i)),i=1,ifish)
+                ! Write header with variable ifish (gfortran compatible)
+                WRITE(JWFILE,'("JDAY,")', ADVANCE='NO')
+                DO i = 1, ifish
+                  WRITE(JWFILE,'("%VOL-",A,",","HAB-VOL(m3)-",A,",")', ADVANCE='NO') trim(fishname(i)),trim(fishname(i))
+                END DO
+                WRITE(JWFILE,'(A)') ''
                 ENDIF
                 
             do jb=bs(jw),be(jw)
@@ -212,10 +232,20 @@ else
                 enddo
                 IF(DOVOL=='ON')THEN
                 write(JBFILE,*)
-                write(JBFILE,101)(trim(fishname(i)),trim(fishname(i)),i=1,ifish)  
+                ! Write header with variable ifish (gfortran compatible)
+                WRITE(JBFILE,'("JDAY,")', ADVANCE='NO')
+                DO i = 1, ifish
+                  WRITE(JBFILE,'("%VOL-",A,",","HAB-VOL(m3)-",A,",")', ADVANCE='NO') trim(fishname(i)),trim(fishname(i))
+                END DO
+                WRITE(JBFILE,'(A)') "DO_VOL(m3)<=1mg/L,"
                     ELSE
                 write(JBFILE,*)
-                write(JBFILE,100)(trim(fishname(i)),trim(fishname(i)),i=1,ifish)
+                ! Write header with variable ifish (gfortran compatible)
+                WRITE(JBFILE,'("JDAY,")', ADVANCE='NO')
+                DO i = 1, ifish
+                  WRITE(JBFILE,'("%VOL-",A,",","HAB-VOL(m3)-",A,",")', ADVANCE='NO') trim(fishname(i)),trim(fishname(i))
+                END DO
+                WRITE(JBFILE,'(A)') ''
                 ENDIF
             enddo
         enddo
@@ -231,9 +261,16 @@ else
     enddo
     !
     write(FISHHABFN+1,'(a,80(1x,i4))')'Volume weighted WQ parameters at segments:',(isegvol(i),i=1,nseg)
-    write(FISHHABFN+1,103)(trim(cname2(NPO4)),isegvol(i),trim(cname2(NNH4)),isegvol(i),trim(cname2(NNO3)),isegvol(i),trim(cname2(NDO)),isegvol(i),trim(cdname2(12)),isegvol(i),trim(cdname2(14)),isegvol(i),i=1,nseg)   ! Chlor a and TP 
-    103 format('JDAY,',<nseg>(6((A,'-',i3,','))))
-    102 format('JDAY,',<nseg>(7((A,'-',i3,','))))  
+    ! Write header with variable nseg (gfortran compatible) - format 103
+    WRITE(FISHHABFN+1,'("JDAY,")', ADVANCE='NO')
+    DO i = 1, nseg
+      WRITE(FISHHABFN+1,'(A,"-",i3,",",A,"-",i3,",",A,"-",i3,",",A,"-",i3,",",A,"-",i3,",",A,"-",i3,",")', ADVANCE='NO') &
+        trim(cname2(NPO4)),isegvol(i),trim(cname2(NNH4)),isegvol(i),trim(cname2(NNO3)),isegvol(i), &
+        trim(cname2(NDO)),isegvol(i),trim(cdname2(12)),isegvol(i),trim(cdname2(14)),isegvol(i)
+    END DO
+    WRITE(FISHHABFN+1,'(A)') ''
+!    103 format('JDAY,',<nseg>(6((A,'-',i3,','))))
+!    102 format('JDAY,',<nseg>(7((A,'-',i3,','))))  
     open(FISHHABFN+2,file=consurf,status='unknown')
     write(FISHHABFN+2,*)'Fish habitat analysis: CE-QUAL-W2 model results'
     write(FISHHABFN+2,'(" FOR SEGMENTS:",*(1x,i4))') (isegvol(i),i=1,nseg)
@@ -243,7 +280,14 @@ else
     enddo
     !
     write(FISHHABFN+2,'(a,i4,a,80(1x,i4))')'Surface (upper',kseg,' model layers) Volume weighted WQ parameters at segments:',(isegvol(i),i=1,nseg)
-    write(FISHHABFN+2,102)(trim(cname2(NPO4)),isegvol(i),trim(cname2(NNH4)),isegvol(i),trim(cname2(NNO3)),isegvol(i),trim(cname2(NDO)),isegvol(i),trim(cdname2(12)),isegvol(i),trim(cdname2(14)),isegvol(i),'Gamma(m-1)',isegvol(i),i=1,nseg)
+    ! Write header with variable nseg (gfortran compatible) - format 102
+    WRITE(FISHHABFN+2,'("JDAY,")', ADVANCE='NO')
+    DO i = 1, nseg
+      WRITE(FISHHABFN+2,'(A,"-",i3,",",A,"-",i3,",",A,"-",i3,",",A,"-",i3,",",A,"-",i3,",",A,"-",i3,",",A,"-",i3,",")', ADVANCE='NO') &
+        trim(cname2(NPO4)),isegvol(i),trim(cname2(NNH4)),isegvol(i),trim(cname2(NNO3)),isegvol(i), &
+        trim(cname2(NDO)),isegvol(i),trim(cdname2(12)),isegvol(i),trim(cdname2(14)),isegvol(i),'Gamma(m-1)',isegvol(i)
+    END DO
+    WRITE(FISHHABFN+2,'(A)') ''
 
     do jjw=1,nwb
     IF (SEDIMENT_CALC(JJW))then
@@ -325,27 +369,57 @@ enddo
 
 ! write out results
 IF(DOVOL=='ON')THEN
-write(FISHHABFN,211)jday,(100.*phabvol(i),habvol(i),i=1,ifish),VOLDOALL    
+  ! Format 211: jday, then ifish pairs of (percent, volume), then VOLDOALL
+  WRITE(FISHHABFN,'(f10.3,",")', ADVANCE='NO') jday
+  DO i = 1, ifish
+    WRITE(FISHHABFN,'(f8.2,",",e12.4,",")', ADVANCE='NO') 100.*phabvol(i), habvol(i)
+  END DO
+  WRITE(FISHHABFN,'(E12.4)') VOLDOALL
 ELSE
-write(FISHHABFN,210)jday,(100.*phabvol(i),habvol(i),i=1,ifish)
+  ! Format 210: jday, then ifish pairs of (percent, volume)
+  WRITE(FISHHABFN,'(f10.3,",")', ADVANCE='NO') jday
+  DO i = 1, ifish
+    WRITE(FISHHABFN,'(f8.2,",",e12.4,",")', ADVANCE='NO') 100.*phabvol(i), habvol(i)
+  END DO
+  WRITE(FISHHABFN,'(A)') ''  ! End line
 ENDIF
 
-210 format(f10.3,',',<ifish>(f8.2,',',e12.4,','))
-211 format(f10.3,',',<ifish>(f8.2,',',e12.4,','),E12.4)
-jbfile=jbfile1;jwfile=jwfile1 
+!210 format(f10.3,',',<ifish>(f8.2,',',e12.4,','))  ! COMMENTED OUT - gfortran incompatible
+!211 format(f10.3,',',<ifish>(f8.2,',',e12.4,','),E12.4)  ! COMMENTED OUT - gfortran incompatible
+jbfile=jbfile1;jwfile=jwfile1
 do jw=1,nwb
     jwfile=jwfile+1
     IF(DOVOL=='ON')THEN
-    write(jwfile,211)jday,(100.*phabvolwb(jw,i),habvolwb(jw,i),i=1,ifish),VOLDOWB(JW)   
-        ELSE
-    write(jwfile,210)jday,(100.*phabvolwb(jw,i),habvolwb(jw,i),i=1,ifish)
+      ! Format 211 for jwfile: jday, then ifish pairs of (percent, volume), then VOLDOWB(JW)
+      WRITE(jwfile,'(f10.3,",")', ADVANCE='NO') jday
+      DO i = 1, ifish
+        WRITE(jwfile,'(f8.2,",",e12.4,",")', ADVANCE='NO') 100.*phabvolwb(jw,i), habvolwb(jw,i)
+      END DO
+      WRITE(jwfile,'(E12.4)') VOLDOWB(JW)
+    ELSE
+      ! Format 210 for jwfile: jday, then ifish pairs of (percent, volume)
+      WRITE(jwfile,'(f10.3,",")', ADVANCE='NO') jday
+      DO i = 1, ifish
+        WRITE(jwfile,'(f8.2,",",e12.4,",")', ADVANCE='NO') 100.*phabvolwb(jw,i), habvolwb(jw,i)
+      END DO
+      WRITE(jwfile,'(A)') ''  ! End line
     ENDIF
     do jb=bs(jw),be(jw)
         jbfile=jbfile+1
         IF(DOVOL=='ON')THEN
-        write(jbfile,211)jday,(100.*phabvolbr(jb,i),habvolbr(jb,i),i=1,ifish),VOLDOBR(JB)    
-            ELSE
-        write(jbfile,210)jday,(100.*phabvolbr(jb,i),habvolbr(jb,i),i=1,ifish)
+          ! Format 211 for jbfile: jday, then ifish pairs of (percent, volume), then VOLDOBR(JB)
+          WRITE(jbfile,'(f10.3,",")', ADVANCE='NO') jday
+          DO i = 1, ifish
+            WRITE(jbfile,'(f8.2,",",e12.4,",")', ADVANCE='NO') 100.*phabvolbr(jb,i), habvolbr(jb,i)
+          END DO
+          WRITE(jbfile,'(E12.4)') VOLDOBR(JB)
+        ELSE
+          ! Format 210 for jbfile: jday, then ifish pairs of (percent, volume)
+          WRITE(jbfile,'(f10.3,",")', ADVANCE='NO') jday
+          DO i = 1, ifish
+            WRITE(jbfile,'(f8.2,",",e12.4,",")', ADVANCE='NO') 100.*phabvolbr(jb,i), habvolbr(jb,i)
+          END DO
+          WRITE(jbfile,'(A)') ''  ! End line
         ENDIF
     enddo
 enddo
@@ -410,9 +484,23 @@ if(oxygen_demand)then
     ctotp(n)=ctotp(n)/voltot
     enddo
 
-    write(FISHHABFN+2,212)jday,(cpo4s(n),cnh4s(n),cno3s(n),cdos(n),ctotps(n),cchlas(n),cgamma(n),n=1,nseg)
-    write(FISHHABFN+1,212)jday,(cpo4(n),cnh4(n),cno3(n),cdo(n),ctotp(n),cchla(n),n=1,nseg)
-    212 format(f10.3,',',<nseg>(7(f10.4,',')))
+    ! Format 212 for FISHHABFN+2: jday, then nseg segments with 7 values each
+    WRITE(FISHHABFN+2,'(f10.3,",")', ADVANCE='NO') jday
+    DO n = 1, nseg
+      WRITE(FISHHABFN+2,'(f10.4,",",f10.4,",",f10.4,",",f10.4,",",f10.4,",",f10.4,",",f10.4,",")', ADVANCE='NO') &
+        cpo4s(n), cnh4s(n), cno3s(n), cdos(n), ctotps(n), cchlas(n), cgamma(n)
+    END DO
+    WRITE(FISHHABFN+2,'(A)') ''  ! End line
+
+    ! Format 212 for FISHHABFN+1: jday, then nseg segments with 6 values each
+    WRITE(FISHHABFN+1,'(f10.3,",")', ADVANCE='NO') jday
+    DO n = 1, nseg
+      WRITE(FISHHABFN+1,'(f10.4,",",f10.4,",",f10.4,",",f10.4,",",f10.4,",",f10.4,",")', ADVANCE='NO') &
+        cpo4(n), cnh4(n), cno3(n), cdo(n), ctotp(n), cchla(n)
+    END DO
+    WRITE(FISHHABFN+1,'(A)') ''  ! End line
+
+    !212 format(f10.3,',',<nseg>(7(f10.4,',')))  ! COMMENTED OUT - gfortran incompatible
 
 
 

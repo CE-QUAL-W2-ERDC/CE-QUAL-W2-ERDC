@@ -75,6 +75,7 @@ write(CON,*)'INTEL_COMPILER_BUILD_DATE:',INTEL_COMPILER_BUILD_DATE
 write(CON,*)'CE-QUAL-W2 Version compile date:',BUILDTIME
 close(CON)
 
+!xxx  OPEN (9922,FILE='HarvestDebug.txt',STATUS='unknown')  !> sch 31Aug2025 Algal harvesting debug output.
 
 ! open ancillary control file for fish bioenergetics !mlm bioexp
   BIOEXP = .FALSE.              ! INITIALIZE LOGICAL VARIABLE THIS IS READ IN THE CONTROL FILE
@@ -1708,7 +1709,7 @@ DO JW=1,NWB
         END IF
       END IF
  END DO
-RESTART_IN=.FALSE.   ! SW 6/29/2025
+
 END DO    ! END OF MAIN DO WHILE LOOP
 
 230 CONTINUE
@@ -1718,14 +1719,10 @@ END DO    ! END OF MAIN DO WHILE LOOP
     CALL RESTART_OUTPUT ('rso.opt')
   END IF
 
-IF(END_RUN .and. RESTART_OUT)CALL RESTART_OUTPUT ('rso.opt')  ! cb 4/9/15 writing restart output at end of simulation if RSOC='ON'
-
-if(.not.restart_in)then
+  IF(END_RUN .and. RESTART_OUT)CALL RESTART_OUTPUT ('rso.opt')  ! cb 4/9/15 writing restart output at end of simulation if RSOC='ON'
 IOPENFISH=3
 IF(ENVIRPC  == "      ON")CALL ENVIRP
 IF(HABTATC  == "      ON")call fishhabitat(iopenfish)                                         ! FINAL OUTPUT FOR ENVIR PERFORMANCE
-endif
-
 CALL ENDSIMULATION
   !IF (WAIT_FOR_INFLOW_RESULTS) THEN                                                                                     !SR 11/26/19
   !  DEALLOCATE (WAIT_TYPE, WAIT_INDEX, FILEDIR)                                                                         !SR 11/26/19
@@ -1740,8 +1737,6 @@ CALL ENDSIMULATION
   IF(CLOSEC=='      ON' .AND. END_RUN)THEN
   CALL EXITDIALOG(DLG,TEXT)
   ELSE
-  if(error_open)TEXT  = 'W2 error - see w2.err. Execution stopped at '//CCTIME(1:2)//':'//CCTIME(3:4)//':'//CCTIME(5:6)//' on '//CDATE(5:6)//'/'//CDATE(7:8)//'/'        &
-                                   //CDATE(3:4)            ! SW 6/30/2025
   CALL STOP_W2 (DLG,TEXT)
   ENDIF
   RETURN

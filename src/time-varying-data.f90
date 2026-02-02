@@ -7,7 +7,8 @@ SUBROUTINE TIME_VARYING_DATA
   USE GLOBAL;  USE SURFHE; USE SCREENC; USE TVDC; USE LOGICC; USE SELWC; USE STRUCTURES; USE NAMESC
   USE KINETIC, ONLY:EXH2O; USE SHADEC; USE MAIN, ONLY: PUMPS, SEGNUM, WBSEG, N2BND, DOBND, DGPBND,NDO, NDGP, ITR, EA, SYSTDG, NN2, TMEND, ATM_DEPOSITION, ATMDEPFN, ATM_DEP_LOADING, ATMDCN, NACATD, ATM_DEPOSITION_INTERPOLATION, GASGTC, GASSPC ! systdg ADD WBSEG, N2BND, DOBND, NDO, NGN2, ITR, EA, SYSTDG
   USE modSYSTDG, ONLY: TWETSC, TWEFN, TWE_TS; USE TDGAS                                     ! systdg
-  USE IFPORT     ! for SLEEPQQ and SYSTEMQQ commands                                       !SR 11/28/19
+!  USE IFPORT     ! for SLEEPQQ and SYSTEMQQ commands - DISABLED FOR UNIX/gfortran           !SR 11/28/19
+  ! Note: SLEEPQQ replaced with CALL SLEEP(), SYSTEMQQ replaced with EXECUTE_COMMAND_LINE() for Unix compatibility
   USE MetFileRegion
   IMPLICIT NONE
 
@@ -17,6 +18,7 @@ SUBROUTINE TIME_VARYING_DATA
   CHARACTER(2)                           :: INFORMAT2
   REAL                                   :: NXQGT2                  
   REAL                                   :: NXQWD1, NXQWD2, NXQGT,  NXTVD, NXQPT, NXZGT
+  REAL                                   :: NXFHA1, NXFHA2          !> sch 29Jan2025. Algal harvesting option variables.
   REAL                                   :: NXWSC
   REAL(R8)                               :: RATIO,QRATIO,TRATIO,CRATIO,HRATIO
   REAL(R8),ALLOCATABLE, DIMENSION(:)     :: QDTRO,  TDTRO,  ELUHO,  ELDHO,  QWDO,   QTRO,   TTRO,   QINO,   TINO
@@ -24,6 +26,7 @@ SUBROUTINE TIME_VARYING_DATA
   REAL,    ALLOCATABLE, DIMENSION(:)     :: NXEXT1, NXEXT2, EXTNX,  EXTO, NXATMD,NXATMD2
   REAL,    ALLOCATABLE, DIMENSION(:)     :: TAIRO,  TDEWO,  PHIO,   WINDO,  SROO,   CLOUDO, PALT_JWO                                   ! systdg - PALT_JWO
   REAL(R8),ALLOCATABLE, DIMENSION(:)     :: QDTRNX, TDTRNX, PRNX,   TPRNX,  ELUHNX, ELDHNX, QWDNX,  QTRNX,  TTRNX,  QINNX,  TINNX
+  REAL(R8),ALLOCATABLE, DIMENSION(:)     :: FHAO, FHANX             !> sch 29Jan2025. Algal harvesting option variables.
   REAL,    ALLOCATABLE, DIMENSION(:)     :: NXQTR1, NXTTR1, NXCTR1, NXQIN1, NXTIN1, NXCIN1, NXQDT1, NXTDT1, NXCDT1, NXDYNS, NXEGT
   REAL,    ALLOCATABLE, DIMENSION(:)     :: NXPR1,  NXTPR1, NXCPR1, NXEUH1, NXTUH1, NXCUH1, NXEDH1, NXTDH1, NXCDH1, NXQOT1, NXMET1
   REAL,    ALLOCATABLE, DIMENSION(:)     :: NXQTR2, NXTTR2, NXCTR2, NXQIN2, NXTIN2, NXCIN2, NXQDT2, NXTDT2, NXCDT2, NXSPDO, NXGTDO
@@ -39,10 +42,12 @@ SUBROUTINE TIME_VARYING_DATA
   LOGICAL                                :: TWEF                                         ! systdg - TWE
   REAL(R8), ALLOCATABLE, DIMENSION(:)    :: DO_SAT, N2_SAT, DO_SATJ, N2_SATJ, DO_SATD, N2_SATD, DO_SATP, N2_SATP                  ! systdg - DO_SATJ, N2_SATJ, DO_SATD, N2_SATD, DO_SATP, N2_SATP 
   INTEGER                                :: NPT,J,JT,JAC,JS,K,JG,JWD
+  INTEGER                                :: HAF, JHA                     !> sch 29Jan2025. Algal harvesting option variables.              
   INTEGER, ALLOCATABLE, DIMENSION(:)     :: TRQ,    TRT,    TRC,    INQ,    DTQ,    PRE,    UHE,    DHE,    INFT,   DTT,PUMPD, JJS, ATMDEP, FGASSP, FGASGT, JJG
-  INTEGER, ALLOCATABLE, DIMENSION(:)     :: PRT,    UHT,    DHT,    INC,    DTC,    PRC,    UHC,    DHC,    OTQ,    MET,    EXT, ODYNS,DYNPUMPF
-  LOGICAL, ALLOCATABLE, DIMENSION(:)     :: INFLOW_CONST, TRIB_CONST, DTRIB_CONST, PRECIP_CONST,OTQF, TRCF, DTCF, INCF, PRCF, METF,DYNEF, TRQF, TRTF, DTTF, DTQF, INQF, INTF, PRQF, PRTF,EXTF
+  INTEGER, ALLOCATABLE, DIMENSION(:)     :: PRT,    UHT,    DHT,    INC,    DTC,    PRC,    UHC,    DHC,    OTQ,    MET,    EXT, ODYNS
+  LOGICAL, ALLOCATABLE, DIMENSION(:)     :: INFLOW_CONST, TRIB_CONST, DTRIB_CONST, PRECIP_CONST,OTQF, TRCF, DTCF, INCF, PRCF, METF,DYNEF, TRQF, TRTF, DTTF, DTQF, INQF, INTF, PRQF, PRTF,EXTF,DYNPUMPF
   LOGICAL                                :: WDQF,WSHF, GATEF,ATMDEPCSV   ! SW 9/26/2017
+  LOGICAL                                :: HAFF                    !> sch 29Jan2025. Algal harvesting option variable.
   INTEGER, ALLOCATABLE, DIMENSION(:)     :: EUHF,TUHF,CUHF,EDHF,TDHF,CDHF    ! =0 Old format for head BCs, =1 Time series format no vertical variation, =2 csv format vertical variation             SW 2/28/17
   CHARACTER(240), ALLOCATABLE, DIMENSION(:)   :: FILE_GAS_GT,FILE_GAS_SP
   
@@ -59,13 +64,16 @@ SUBROUTINE TIME_VARYING_DATA
   !TR_FILEDIR            -- character array (tributary index) to hold the directory names of any awaited tributary input files
   !BR_FILEDIR            -- character array (branch index) to hold the directory names of any awaited branch input files
   
-  INTEGER                                :: RESULT1, ITER, N                                                               !SR 11/28/19
+  INTEGER                                :: ITER, N                                                                        !SR 11/28/19
+  LOGICAL                                :: RESULT1                                                                         !SR 11/28/19 - Changed to LOGICAL for gfortran
   REAL                                   :: LAST_JDAY, GET_LAST_JDAY                                                    !SR 11/28/19
   CHARACTER(240)                         :: FULL_FILE_NAME                                                              !SR 11/28/19
   LOGICAL                                :: INPUT_FILE_EXISTS                                                           !SR 11/28/19
   EXTERNAL GET_LAST_JDAY                                                                                                !SR 11/28/19
   EXTERNAL PRINT_ERROR_AND_STOP                                                                                         !SR 11/28/19
-  
+  EXTERNAL EOF, SYSTEMQQ                                                                                                ! gfortran compatibility
+  LOGICAL :: EOF, SYSTEMQQ                                                                                              ! gfortran compatibility
+
   SAVE
 ! Allocation declarations
 
@@ -89,6 +97,7 @@ SUBROUTINE TIME_VARYING_DATA
   ALLOCATE (WSCNX(IMX), PRCF(NBR), ODYNS(NBR),NXDYNS(NBR),NXESTRT(NST,NBR), PRTF(NBR), PRQF(NBR),EXTF(NWB))
   ALLOCATE (QDTRO(NBR),  TDTRO(NBR),  ELUHO(NBR),  ELDHO(NBR),  QWDO(NWD),   QTRO(NTR),   TTRO(NTR),   QINO(NBR),   TINO(NBR))
   ALLOCATE (QDTRNX(NBR), TDTRNX(NBR), PRNX(NBR),   TPRNX(NBR),  ELUHNX(NBR), ELDHNX(NBR), QWDNX(NWD),  QTRNX(NTR),  TTRNX(NTR))
+  ALLOCATE (FHAO(NHF), FHANX(NHF))                        !> sch 29Jan2025. Algal harvesting option variables.
   
     IF(Met_regions.AND. NMetFileRegions > NWB)then        ! SW 12/13/2023
       ALLOCATE (QINNX(NBR),  TINNX(NBR),  METF(NMetFileRegions), SROO(NMetFileRegions),   TAIRO(NMetFileRegions),  TDEWO(NMetFileRegions),  CLOUDO(NMetFileRegions), PHIO(NMetFileRegions),   WINDO(NMetFileRegions),  TAIRNX(NMetFileRegions), PALT_JWO(NMetFileRegions), PALT_JWNX(NMetFileRegions))     ! systdg - time series PALT
@@ -131,6 +140,7 @@ SUBROUTINE TIME_VARYING_DATA
   OTQF = .FALSE.
   WSHF = .FALSE.
   WDQF = .FALSE.
+  HAFF = .FALSE.                                   !> sch 29Jan2025. Algal harvesting option file logic switch.
   TRCF = .FALSE.
   TRQF = .FALSE.
   TRTF = .FALSE.
@@ -460,7 +470,26 @@ SUBROUTINE TIME_VARYING_DATA
     ENDIF
     QWDSAV(1:NWD) = QWD(1:NWD)                                                                                        !SR 06/29/2021
   END IF
-  IF (TRIBUTARIES) THEN
+    
+!> sch 30Aug2025. Start algal harvesting option. Algal harvesting time-series inputs. Employing the file structure used for segment withdrawal inputs. 
+  IF (NHF > 0) THEN
+!xxx    write (9922, *) "NHF = ", NHF, "Harvest time series file =", HAFFN
+    HAF = NPT; NPT = NPT+1
+    OPEN (HAF,FILE=HAFFN,STATUS='OLD')
+    READ (HAF,'(/)')
+    READ (HAF,*) NXFHA2,(FHANX(JHA),JHA=1,NHF)                         !> Algal harvesting option. JDAY for removal, segment-specific fractions of algae removed. sch 29Jan2025. 
+!xxx    write (9922,*) NXFHA2,(FHANX(JHA),JHA=1,NHF)
+    DO JHA = 1,NHF 
+      FHA(JHA)  = FHANX(JHA)
+      FHAO(JHA) = FHANX(JHA)
+    END DO
+    READ (HAF,*) NXFHA1,(FHANX(JHA),JHA=1,NHF)                         !> Algal harvesting option. JDAY for next removal, segment-specific fractions of algae removed. sch 29Jan2025. 
+!xxx    write (9922,*) NXFHA1,(FHANX(JHA),JHA=1,NHF)
+    FHASAV(1:NHF) = FHA(1:NHF)                                         !> Algal harvesting option. Save FHA for later use. sch 29Jan2025. 
+  END IF
+!> sch 30Aug2025. End reading algal harvesting option inputs. 
+  
+IF (TRIBUTARIES) THEN
     DO JT=1,NTR
       TRQ(JT) = NPT; NPT = NPT+1
       TRT(JT) = NPT; NPT = NPT+1
@@ -1674,6 +1703,22 @@ ENTRY READ_INPUT_DATA (NXTVD)
     NXTVD = MIN(NXTVD,NXQWD1)
   END IF
   
+!> sch 30Aug2025. Start algal harvesting option. If algal harvesting option active (NHF>0 as read in 1st input file), then read the segment-specific reduction inputs. 
+  IF (NHF > 0) THEN
+    DO WHILE (JDAY >= NXFHA1)
+      NXFHA2 = NXFHA1
+      DO JHA=1,NHF
+        FHA(JHA)  = FHANX(JHA)
+        FHAO(JHA) = FHANX(JHA)
+      END DO
+      READ (HAF,*) NXFHA1,(FHANX(JHA),JHA=1,NHF)  
+!xxx      write (9922,*) NXFHA1,(FHANX(JHA),JHA=1,NHF)
+    FHASAV(1:NHF) = FHA(1:NHF)                                                          
+    END DO
+    NXTVD = MIN(NXTVD,NXFHA1)
+  END IF
+!> sch 30Aug2025. End algal harvesting option.
+  
   ! Spillways DO gas
   DO N=1,NSP              ! SW 1/18/2022
     IF(GASSPC(N)=='      ON' .AND. EQSP(N)==4 .AND. BGASSP(N)==1)THEN
@@ -2816,6 +2861,19 @@ IF(.NOT.Met_Regions)THEN
     END DO
   END IF
 
+!> sch 29Jan2025. Start algal harvesting option. Interpolate if option for that is active.
+!> sch 30Aug2025. This is currently not relevant for harvesting option. Comment out and retain code for later consideration.
+!  IF (NHF > 0) THEN
+!    QRATIO = (NXFHA1-JDAY)/(NXFHA1-NXFHA2)
+!    DO JHA=1,NHF
+!      IF (INTERP_HARVESTING(JHA)) THEN
+!        FHA(JHA) = (1.0-QRATIO)*FHANX(JHA)+QRATIO*FHAO(JHA)
+!        FHASAV(JHA) = FHA(JHA)
+!      END IF     
+!    END DO
+!  END IF
+!> sch 29Jan2025. End algal harvesting option.
+
 ! Gates  adding interpolation cb 8/13/2010  
   IF (gates) THEN
     QRATIO = (NXQgt-JDAY)/(NXQgt-NXQgt2)
@@ -2992,6 +3050,7 @@ ENTRY DEALLOCATE_TIME_VARYING_DATA
   DEALLOCATE (NXCDT2, NXPR2,  NXTPR2, NXCPR2, NXEUH2, NXTUH2, NXCUH2, NXEDH2, NXTDH2, NXCDH2, NXQOT2, NXMET2, WSCNX,DYNPUMPF)
   DEALLOCATE (QDTRO,  TDTRO,  ELUHO,  ELDHO,  QWDO,   QTRO,   TTRO,   QINO,   TINO,   QDTRNX, TDTRNX, PRNX,   TPRNX,  ELUHNX)
   DEALLOCATE (ELDHNX, QWDNX,  QTRNX,  TTRNX,  QINNX,  TINNX,  SROO,   TAIRO,  TDEWO,  CLOUDO, PHIO,   WINDO,  TAIRNX, BGTNX,BPNX, PALT_JWO, PALT_JWNX)  ! systdg  PALT_JWO, PALT_JWNX
+  DEALLOCATE (FHAO, FHANX)                               !> sch 29Jan2025. Algal harvesting option variables.
   DEALLOCATE (TDEWNX, CLOUDNX,PHINX,  WINDNX, SRONX,  TRQ,    TRT,    TRC,    INQ,    DTQ,    PRE,    UHE,    DHE,    INFT)
   DEALLOCATE (DTT,    PRT,    UHT,    DHT,    INC,    DTC,    PRC,    UHC,    DHC,    OTQ,    MET,    EXT,    EXTNX,  EXTO, EXTF)
   DEALLOCATE (NXEXT1, NXEXT2, CTRO,   CINO,   QOUTO,  CDTRO,  TUHO,   TDHO,   QSTRO,  CTRNX,  CINNX,  QOUTNX, CDTRNX, CPRNX)
@@ -3016,6 +3075,8 @@ REAL FUNCTION GET_LAST_JDAY(FNAME)
     REAL            LAST_JDAY
     CHARACTER(1)    INFORMAT
     CHARACTER(72)   FNAME
+    EXTERNAL EOF                            ! gfortran compatibility
+    LOGICAL :: EOF                          ! gfortran compatibility
 
     OPEN (CON,FILE=FNAME,STATUS='OLD')      ! File was previously tested for existence
     READ (CON,'(A1)') INFORMAT              ! Assumption that 3-line header is in place, with at least one line of data
@@ -3042,16 +3103,57 @@ END FUNCTION GET_LAST_JDAY
 ! Executing this function will also stop the program
 
 SUBROUTINE PRINT_ERROR_AND_STOP(TYPE_TEXT, TYPE_INDEX)
-  USE IFPORT                                           ! For GETLASTERRORXX()
+  ! USE IFPORT removed for gfortran compatibility                                          ! For GETLASTERRORXX()
 
   INTEGER       TYPE_INDEX, IRESULT
   CHARACTER(3)  TYPE_TEXT
   CHARACTER(8)  ERR_TEXT
 
-  IRESULT = GETLASTERRORQQ()                           ! USE GETLASTERRORQQ TO GET THE ERROR CODE
+  IRESULT = 0  ! GETLASTERRORQQ() removed for gfortran compatibility
   WRITE (ERR_TEXT,'(A,I0)') TYPE_TEXT, TYPE_INDEX
-  WRITE (*,*)    TRIM(ERR_TEXT),': ERROR EXECUTING BATCH PROGRAM: ERROR CODE:',IRESULT
-  WRITE (9911,*) TRIM(ERR_TEXT),': ERROR EXECUTING BATCH PROGRAM: ERROR CODE:',IRESULT
+  WRITE (*,*)    TRIM(ERR_TEXT),': ERROR EXECUTING BATCH PROGRAM'
+  WRITE (9911,*) TRIM(ERR_TEXT),': ERROR EXECUTING BATCH PROGRAM'
   CLOSE (9911)
   STOP
 END SUBROUTINE PRINT_ERROR_AND_STOP
+
+! ============================================================================
+! Intel Fortran compatibility stubs for gfortran
+! ============================================================================
+
+LOGICAL FUNCTION EOF(UNIT_NUM)
+  ! gfortran-compatible replacement for Intel Fortran's EOF() intrinsic
+  ! Uses IOSTAT to detect end-of-file by attempting to read a line
+  USE ISO_FORTRAN_ENV, ONLY: IOSTAT_END
+  IMPLICIT NONE
+  INTEGER, INTENT(IN) :: UNIT_NUM
+  INTEGER :: IOSTAT_VAL
+  CHARACTER(LEN=10000) :: LINE
+
+  ! Attempt to read a full line (advancing read)
+  READ(UNIT_NUM, '(A)', IOSTAT=IOSTAT_VAL) LINE
+
+  IF (IOSTAT_VAL == IOSTAT_END) THEN
+    ! True end-of-file
+    EOF = .TRUE.
+  ELSE IF (IOSTAT_VAL < 0) THEN
+    ! Other negative values also indicate EOF conditions
+    EOF = .TRUE.
+  ELSE
+    ! Successfully read a line - back up so next read gets this line
+    BACKSPACE(UNIT_NUM)
+    EOF = .FALSE.
+  END IF
+
+  RETURN
+END FUNCTION EOF
+
+LOGICAL FUNCTION SYSTEMQQ(COMMAND)
+  IMPLICIT NONE
+  CHARACTER(*), INTENT(IN) :: COMMAND
+  INTEGER :: EXITSTAT
+  ! Execute command using gfortran-compatible function
+  CALL EXECUTE_COMMAND_LINE(COMMAND, EXITSTAT=EXITSTAT)
+  SYSTEMQQ = (EXITSTAT == 0)
+  RETURN
+END FUNCTION SYSTEMQQ

@@ -100,10 +100,14 @@ IF(LAKE_RIVER_CONTOUR_ON=='ON')THEN    ! SW 2/28/2020
         DO K = KTWB(JW),KBI(I)  
           DO JC = NZOOS,NZOOE  
             C2ZOO(K,I,JC) =  C2(K,I,JC)*CMULT(JC)  
-          END DO  
-	WRITE(BIOEXPFN(J),'(F8.2,",",I8,",",3(F8.2,","),<NZOOE-NZOOS+1>(F8.3,","),I8,",",2(F8.2,","),A,",",I0,",",I0)') JDAY,IBIO(J),DEPTHM(K,I),T1(K,I),GAMMA(K,I),&          ! CB 1/6/17
-			     (C2ZOO(K,I,JC), JC = NZOOS,NZOOE),K,BH(K,I),EL(K,I),MONTH,GDAY,YEAR
-            
+          END DO
+          ! Write bioexp output (gfortran compatible)
+          WRITE(BIOEXPFN(J),'(F8.2,",",I8,",",3(F8.2,","))', ADVANCE='NO') JDAY,IBIO(J),DEPTHM(K,I),T1(K,I),GAMMA(K,I)
+          DO JC = NZOOS, NZOOE
+            WRITE(BIOEXPFN(J),'(F8.3,",")', ADVANCE='NO') C2ZOO(K,I,JC)
+          END DO
+          WRITE(BIOEXPFN(J),'(I8,",",2(F8.2,","),A,",",I0,",",I0)') K,BH(K,I),EL(K,I),MONTH,GDAY,YEAR
+
         END DO  
            ! VOLUME WEIGHTING OF ACTIVE CONSTITUENTS     !MLM 18.07.06
         KLIM = MIN(KB(I),KTWB(JW)+5)  
@@ -119,7 +123,12 @@ IF(LAKE_RIVER_CONTOUR_ON=='ON')THEN    ! SW 2/28/2020
           C2W(I,JJC) = C2W(I,JJC)/VOLROOS(I)  
         END DO  
           
-        WRITE(WEIGHTNUM(J),'(F10.3,",",<NAC>(F9.3,","),2(F9.3,","))')JDAY,(C2W(I,JJC),JJC = 1,NAC+2)  
+        ! Write weight data (gfortran compatible)
+        WRITE(WEIGHTNUM(J),'(F10.3,",")', ADVANCE='NO') JDAY
+        DO JJC = 1, NAC
+          WRITE(WEIGHTNUM(J),'(F9.3,",")', ADVANCE='NO') C2W(I,JJC)
+        END DO
+        WRITE(WEIGHTNUM(J),'(2(F9.3,","))') C2W(I,NAC+1),C2W(I,NAC+2)  
         VOLROOS = 0.0
           
       END DO  
@@ -319,7 +328,21 @@ IF(LAKE_RIVER_CONTOUR_ON=='ON')THEN    ! SW 2/28/2020
      
     IF(ALGAE_TOXIN)THEN
       IF(ATOX_DEBUG=='ON')THEN
-          WRITE(ATOXIN_DEBUG_FN,'(F10.3,",",I4,",",I4,",",<NUMATOXINS>(E12.4,","),<NUMATOXINS>(E12.4,","),<NUMATOXINS>(E12.4,","),<NAL>(E12.4,","))')JDAY,K,I,(EX_TOXIN(K,I,JA),JA=1,numatoxins),(IN_TOXIN(K,I,JA),JA=1,numatoxins),(CTESS(K,I,JA),JA=1,numatoxins),(ALG(K,I,JA),JA=1,NAL)
+          ! Converted to DO loops for gfortran compatibility
+          WRITE(ATOXIN_DEBUG_FN,'(F10.3,",",I4,",",I4,",")', ADVANCE='NO') JDAY,K,I
+          DO JA = 1, numatoxins
+            WRITE(ATOXIN_DEBUG_FN,'(E12.4,",")', ADVANCE='NO') EX_TOXIN(K,I,JA)
+          END DO
+          DO JA = 1, numatoxins
+            WRITE(ATOXIN_DEBUG_FN,'(E12.4,",")', ADVANCE='NO') IN_TOXIN(K,I,JA)
+          END DO
+          DO JA = 1, numatoxins
+            WRITE(ATOXIN_DEBUG_FN,'(E12.4,",")', ADVANCE='NO') CTESS(K,I,JA)
+          END DO
+          DO JA = 1, NAL
+            WRITE(ATOXIN_DEBUG_FN,'(E12.4,",")', ADVANCE='NO') ALG(K,I,JA)
+          END DO
+          WRITE(ATOXIN_DEBUG_FN,'(A)') ''
       ENDIF
     ENDIF    
      
@@ -613,9 +636,7 @@ IF(LAKE_RIVER_CONTOUR_ON=='ON')THEN    ! SW 2/28/2020
                                         ENDIF
                                         WRITE (CONV1(K,ISPR(J,JW)),'(F12.3)') TVOLAVG
         ENDDO          
-        !WRITE (SPRV(JW),'(A,",",F10.3,",",*(A,","))') 'Temperature(C)',JDAY,(CONV1(K,ISPR(J,JW)),J=1,NISPR(JW))  
-        WRITE (SPRV(JW),'(A,",",F10.3,",",*(A,","))') '"Temperature(C)                             "',JDAY,(CONV1(K,ISPR(J,JW)),J=1,NISPR(JW))     ! SW 6/2025
-
+        WRITE (SPRV(JW),'(A,",",F10.3,",",*(A,","))') 'Temperature(C)',JDAY,(CONV1(K,ISPR(J,JW)),J=1,NISPR(JW))  
         
         DO JC=1,NAC  
           IF (PRINT_CONST(CN(JC),JW)) THEN  
@@ -633,8 +654,7 @@ IF(LAKE_RIVER_CONTOUR_ON=='ON')THEN    ! SW 2/28/2020
                                         ENDIF
                 WRITE (CONV1(K,ISPR(J,JW)),'(F12.4)') TVOLAVG                                                ! SW 8/31/18  
             END DO   
-           !   WRITE (SPRV(JW),'(A,",",F10.3,",",*(A,","))') trim(CNAME3(CN(JC))),JDAY,(CONV1(K,ISPR(J,JW)),J=1,NISPR(JW))   
-            WRITE (SPRV(JW),'(A43,",",F10.3,",",*(A,","))') CNAME(CN(JC)),JDAY,(CONV1(K,ISPR(J,JW)),J=1,NISPR(JW))   ! SW 6/2025
+              WRITE (SPRV(JW),'(A,",",F10.3,",",*(A,","))') trim(CNAME3(CN(JC))),JDAY,(CONV1(K,ISPR(J,JW)),J=1,NISPR(JW))   
           END IF  
         END DO  
         IF (CONSTITUENTS) THEN  
@@ -654,8 +674,7 @@ IF(LAKE_RIVER_CONTOUR_ON=='ON')THEN    ! SW 2/28/2020
                                         ENDIF
                   WRITE (CONV1(K,ISPR(J,JW)),'(es12.4)') TVOLAVG                                     ! SW 8/31/18  
               END DO  
-                !WRITE (SPRV(JW),'(A,",",F10.3,",",*(A,","))') trim(CDNAME3(CDN(JD,JW))),JDAY,(CONV1(K,ISPR(J,JW)),J=1,NISPR(JW))  
-                WRITE (SPRV(JW),'(A43,",",F10.3,",",*(A,","))') CDNAME(CDN(JD,JW)),JDAY,(CONV1(K,ISPR(J,JW)),J=1,NISPR(JW))  ! SW 6/2025
+                WRITE (SPRV(JW),'(A,",",F10.3,",",*(A,","))') trim(CDNAME3(CDN(JD,JW))),JDAY,(CONV1(K,ISPR(J,JW)),J=1,NISPR(JW))  
             END IF  
             END DO  
             END IF    
@@ -668,8 +687,7 @@ IF(LAKE_RIVER_CONTOUR_ON=='ON')THEN    ! SW 2/28/2020
 
         END DO  
         DO K=KTWB(JW),KBMAX(JW)  
-          !WRITE (SPR(JW),'(A,",",2(F10.3,","),*(F10.3,",",A,","))') 'Temperature(C)',JDAY,DEPTHM(K,DS(BS(JW))),                      &  
-          WRITE (SPR(JW),'(A,",",2(F10.3,","),*(F10.3,",",A,","))') '"Temperature(C)                             "',JDAY,DEPTHM(K,DS(BS(JW))),     &    ! SW 6/2025
+          WRITE (SPR(JW),'(A,",",2(F10.3,","),*(F10.3,",",A,","))') 'Temperature(C)',JDAY,DEPTHM(K,DS(BS(JW))),                      &  
           (ELWS(ISPR(J,JW))-DEPTHM(K,ISPR(J,JW)),CONV1(K,J),J=1,NISPR(JW))  
         END DO 
         DO J=1,NISPR(JW)  
@@ -680,8 +698,7 @@ IF(LAKE_RIVER_CONTOUR_ON=='ON')THEN    ! SW 2/28/2020
         
 
         DO K=KTWB(JW),KBMAX(JW)  
-         ! WRITE (SPR(JW),'(A,",",2(F10.3,","),*(F10.3,",",A,","))') 'HorizontalVelocity(ms-1)',JDAY,DEPTHM(K,DS(BS(JW))),                      &  
-        WRITE (SPR(JW),'(A,",",2(F10.3,","),*(F10.3,",",A,","))') '"HorizontalVelocity(m/s)                    "',JDAY,DEPTHM(K,DS(BS(JW))),      &    ! SW 6/2025
+          WRITE (SPR(JW),'(A,",",2(F10.3,","),*(F10.3,",",A,","))') 'HorizontalVelocity(ms-1)',JDAY,DEPTHM(K,DS(BS(JW))),                      &  
           (ELWS(ISPR(J,JW))-DEPTHM(K,ISPR(J,JW)),CONV1(K,J),J=1,NISPR(JW))  
         END DO  
         DO J=1,NISPR(JW)  
@@ -692,8 +709,7 @@ IF(LAKE_RIVER_CONTOUR_ON=='ON')THEN    ! SW 2/28/2020
         
 
         DO K=KTWB(JW),KBMAX(JW)  
-          !WRITE (SPR(JW),'(A,",",2(F10.3,","),*(F10.3,",",A,","))') 'HorizontalLayerFlow(m3s-1)',JDAY,DEPTHM(K,DS(BS(JW))),                      & 
-           WRITE (SPR(JW),'(A,",",2(F10.3,","),*(F10.3,",",A,","))') '"HorizontalLayerFlow(m3/s)                  "',JDAY,DEPTHM(K,DS(BS(JW))),     &    ! SW 6/2025           
+          WRITE (SPR(JW),'(A,",",2(F10.3,","),*(F10.3,",",A,","))') 'HorizontalLayerFlow(m3s-1)',JDAY,DEPTHM(K,DS(BS(JW))),                      &  
           (ELWS(ISPR(J,JW))-DEPTHM(K,ISPR(J,JW)),CONV1(K,J),J=1,NISPR(JW))  
         END DO  
 
@@ -705,9 +721,8 @@ IF(LAKE_RIVER_CONTOUR_ON=='ON')THEN    ! SW 2/28/2020
               END DO  
             END DO  
             DO K=KTWB(JW),KBMAX(JW)  
-              !WRITE (SPR(JW),'(A,",",2(F10.3,","),*(F10.3,",",A,","))') trim(CNAME3(CN(JC)))//" "//TRIM(CUNIT2(CN(JC))),JDAY,DEPTHM(K,DS(BS(JW))),                            &  
-              WRITE (SPR(JW),'(A45,",",2(F10.3,","),*(F10.3,",",A,","))') '"'//CNAME(CN(JC))//'"',JDAY,DEPTHM(K,DS(BS(JW))),                            &  ! SW 6/2025
-                  (ELWS(ISPR(J,JW))-DEPTHM(K,ISPR(J,JW)),CONV1(K,J),J=1,NISPR(JW))  
+              WRITE (SPR(JW),'(A,",",2(F10.3,","),*(F10.3,",",A,","))') trim(CNAME3(CN(JC)))//" "//TRIM(CUNIT2(CN(JC))),JDAY,DEPTHM(K,DS(BS(JW))),                            &  
+              (ELWS(ISPR(J,JW))-DEPTHM(K,ISPR(J,JW)),CONV1(K,J),J=1,NISPR(JW))  
             END DO  
           END IF  
         END DO  
@@ -720,9 +735,8 @@ IF(LAKE_RIVER_CONTOUR_ON=='ON')THEN    ! SW 2/28/2020
                 END DO  
               END DO  
               DO K=KTWB(JW),KBMAX(JW)  
-                !WRITE (SPR(JW),'(A,",",2(F10.3,","),*(F10.3,",",A,","))') trim(CDNAME3(CDN(JD,JW)))//" "//TRIM(CUNIT3(CDN(JD,JW))),JDAY,DEPTHM(K,DS(BS(JW))),                     &  
-                WRITE (SPR(JW),'(A45,",",2(F10.3,","),*(F10.3,",",A,","))') '"'//CDNAME(CDN(JD,JW))//'"',JDAY,DEPTHM(K,DS(BS(JW))),                     &  
-                    (ELWS(ISPR(J,JW))-DEPTHM(K,ISPR(J,JW)),CONV1(K,J),J=1,NISPR(JW))  
+                WRITE (SPR(JW),'(A,",",2(F10.3,","),*(F10.3,",",A,","))') trim(CDNAME3(CDN(JD,JW)))//" "//TRIM(CUNIT3(CDN(JD,JW))),JDAY,DEPTHM(K,DS(BS(JW))),                     &  
+                (ELWS(ISPR(J,JW))-DEPTHM(K,ISPR(J,JW)),CONV1(K,J),J=1,NISPR(JW))  
               END DO  
             END IF  
           END DO  

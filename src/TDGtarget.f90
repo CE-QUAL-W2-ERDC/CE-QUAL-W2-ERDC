@@ -108,11 +108,19 @@ Subroutine InitTDGtarget
     read (targetfnno+3,*) nxtjday, tstarget2              
   end if
   close(targetfnno+1)
-  
-  !!  Initial output file  
+
+  !!  Initial output file
+  ! n is already declared at module level (line 11)
   open (targetfnno, FILE='TDGTarget_output.csv', status='unknown')
   !if (NGT>0) write (targetfnno,'(3A,<NGT>(A,i2))')'     JDAY','         TDG' ,'      SUM Q   ',('      Q',n, n=1,NGT)
-  if (NGT>0) write (targetfnno,'("     JDAY,", " C,", "       TDG,", "    SUM Q,", <NGT>(A,i2,","))') ('      Q',n, n=1,NGT)
+  ! Write header with variable number of gates (gfortran compatible)
+  if (NGT>0) then
+    WRITE (targetfnno,'("     JDAY,", " C,", "       TDG,", "    SUM Q,")', ADVANCE='NO')
+    DO n = 1, NGT
+      WRITE (targetfnno,'("      Q",i2,",")', ADVANCE='NO') n
+    END DO
+    WRITE (targetfnno, '(A)') ''  ! End line
+  end if
   open (targetfnno+2, FILE='TDGTarget_warning.opt', action="READWRITE", status='unknown')
   return
 End subroutine InitTDGtarget
@@ -358,7 +366,12 @@ Subroutine TDGtarget
         SUM_QGT2 = SUM_QGT2+QGT(ig)
       END DO
       !WRITE (targetfnno, '(A, F10.3, 2A, F10.3, A, F9.3, A, <NGT>(F9.3))')' ',JDAY,'  ', CO,TDG_TDG,'  ',SUM_QGT2,'  ',(QGT(ig), ig = 1, NGT)
-      WRITE (targetfnno, '(F10.3, ",", A, ",", F10.3, ",", F9.3, ",", <NGT>(F9.3,","))') JDAY, CO, TDG_TDG, SUM_QGT2, (QGT(ig), ig = 1, NGT)
+      ! Write data with variable number of gates (gfortran compatible)
+      WRITE (targetfnno, '(F10.3, ",", A, ",", F10.3, ",", F9.3, ",")', ADVANCE='NO') JDAY, CO, TDG_TDG, SUM_QGT2
+      DO ig = 1, NGT
+        WRITE (targetfnno, '(F9.3,",")', ADVANCE='NO') QGT(ig)
+      END DO
+      WRITE (targetfnno, '(A)') ''  ! End line
       NXTSPLIT = NXTSPLIT + tsfreq
     END IF
     IF (JDAY>=NXTSPLIT2) NXTSPLIT2 = NXTSPLIT2 + tsfreq
