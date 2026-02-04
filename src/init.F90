@@ -411,7 +411,9 @@ USE GLOBAL;     USE NAMESC; USE GEOMC;  USE LOGICC; USE PREC;  USE SURFHE;  USE 
     BACT1DK  = BACT1DK/DAY;  BACTLDK = BACTLDK/DAY; BACTS    = BACTS/DAY
     PSIS   = PSIS  /DAY; POMS   = POMS  /DAY; SDK    = SDK   /DAY; NH4DK = NH4DK /DAY; NO3DK  = NO3DK /DAY
     NO3S   = NO3S  /DAY; PSIDK  = PSIDK /DAY; LRDDK  = LRDDK /DAY; LRPDK = LRPDK /DAY; LDOMDK = LDOMDK/DAY
-    LPOMDK = LPOMDK/DAY; RDOMDK = RDOMDK/DAY; RPOMDK = RPOMDK/DAY; KBOD  = KBOD  /DAY; seds   = seds/day   !v3.5
+    LPOMDK = LPOMDK/DAY; RDOMDK = RDOMDK/DAY; RPOMDK = RPOMDK/DAY
+    IF(ALLOCATED(KBOD)) KBOD  = KBOD  /DAY    ! gfortran fix: KBOD not allocated when NBOD=0
+    seds   = seds/day   !v3.5
     !   
     LPOMHK  = LPOMHK/DAY;  RPOMHK = RPOMHK/DAY
     LDOMPDK = LDOMPDK/DAY; RDOMPDK= RDOMPDK/DAY; LRDOMPDK = LRDOMPDK/DAY
@@ -423,7 +425,7 @@ USE GLOBAL;     USE NAMESC; USE GEOMC;  USE LOGICC; USE PREC;  USE SURFHE;  USE 
     !
     SDK1    = SDK1   /DAY; SDK2    = SDK2   /DAY  ! Amaila
     SEDB=SEDB/DAY   !CB 11/27/06
-    CBODS  = CBODS/DAY   !CB 7/23/07
+    IF(ALLOCATED(CBODS) .AND. SIZE(CBODS)>0) CBODS  = CBODS/DAY   !CB 7/23/07  gfortran fix: CBODS empty when NBOD=0
 !    SSFLOC = SSFLOC/DAY                                                                                                 !SR 04/21/13
     DO JW=1,NWB
       SOD(US(BS(JW))-1:DS(BE(JW))+1) = (SOD(US(BS(JW))-1:DS(BE(JW))+1)/DAY)*FSOD(JW)

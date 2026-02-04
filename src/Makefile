@@ -29,7 +29,7 @@ FFLAGS = -O2 \
          -fmax-stack-var-size=0
 
 # Optional flags for debugging (uncomment as needed)
-DEBUG_FLAGS = -g  -finit-local-zero 
+DEBUG_FLAGS = -g  -finit-local-zero -fcheck=all -fcheck=bounds 
 FFLAGS += $(DEBUG_FLAGS)
 
 # Optional OpenMP support (currently not used)
