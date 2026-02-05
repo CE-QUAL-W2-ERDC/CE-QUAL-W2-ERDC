@@ -206,11 +206,11 @@ Subroutine TDGtarget
       END DO
       DO ig = 1,NGSP
         Q_SP = Q_SP + QGT(SPGTNO(ig))
-        IF (QGT(SPGTNO(ig))>0.0 .AND. (QGT(SPGTNO(ig))>Q_ALL*SPMINFRAC(SPGTNO(ig))+MINV)) SP_ACTIVE(ig) = .TRUE.
+        IF (QGT(SPGTNO(ig))>0.0 .AND. (QGT(SPGTNO(ig))>Q_ALL*SPMINFRAC(ig)+MINV)) SP_ACTIVE(ig) = .TRUE.
       END DO
       DO ig = 1,NGPH
         Q_PH = Q_PH + QGT(PHGTNO(ig))
-        IF (QGT(PHGTNO(ig))>0.0 .AND. (QGT(SPGTNO(ig))+MINV<PHMAXFLOW(ig))) PH_ACTIVE(ig) = .TRUE.
+        IF (QGT(PHGTNO(ig))>0.0 .AND. (QGT(PHGTNO(ig))+MINV<PHMAXFLOW(ig))) PH_ACTIVE(ig) = .TRUE.
       END DO
           
       QSP_AVL = Q_SP - Q_ALL*SUM_SP_FRAC
@@ -228,10 +228,10 @@ Subroutine TDGtarget
         Q_CUTTED = 0.0 
         Q_LEFT = Q_SP-Q_CUTTED
         DO ig = 1, NGSP
-          IF (QGT(SPGTNO(ig))>0.0 .AND. (QGT(SPGTNO(ig))>Q_ALL*SPMINFRAC(SPGTNO(ig))+MINV)) SP_ACTIVE(ig) = .TRUE.
+          IF (QGT(SPGTNO(ig))>0.0 .AND. (QGT(SPGTNO(ig))>Q_ALL*SPMINFRAC(ig)+MINV)) SP_ACTIVE(ig) = .TRUE.
         END DO
         DO ig = 1,NGPH
-          IF (QGT(PHGTNO(ig))>0.0 .AND. (QGT(SPGTNO(ig))+MINV<PHMAXFLOW(ig))) PH_ACTIVE(ig) = .TRUE.
+          IF (QGT(PHGTNO(ig))>0.0 .AND. (QGT(PHGTNO(ig))+MINV<PHMAXFLOW(ig))) PH_ACTIVE(ig) = .TRUE.
         END DO
         Q_TEMP = 0.0
         
