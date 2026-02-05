@@ -210,96 +210,165 @@ WRITE(CEMASNPOutFilN,'(A)') ''  ! End line
               WRITE(CEMASedFlxFilN19,'(f10.4,",")', ADVANCE='NO') KFSFAV(SegNumI,16)
             END DO
             WRITE(CEMASedFlxFilN19,'(A)') ''  ! End line
+            ! H1 - Aerobic Layer Thickness (was missing)
+            WRITE(CEMASedFlxFilN20,'(A,f12.4,A)', ADVANCE='NO') 'H1(m),',JDAY,','
+            DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN20,'(f10.4,",")', ADVANCE='NO') SD_AerLayerThick(SegNumI)
+            END DO
+            WRITE(CEMASedFlxFilN20,'(A)') ''  ! End line
+
+            ! Temperature_KB_Layer1
             WRITE(CEMASedFlxFilN21,'(A,f10.3,A)', ADVANCE='NO') 'Temperature_KB_Layer1(C),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN21,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,15)
             END DO
             WRITE(CEMASedFlxFilN21,'(A)') ''  ! End line
+
+            ! Temperature_KB_Layer2
             WRITE(CEMASedFlxFilN22,'(A,f10.3,A)', ADVANCE='NO') 'Temperature_KB_Layer2(C),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN22,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,16)
             END DO
             WRITE(CEMASedFlxFilN22,'(A)') ''  ! End line
-            
+
+            ! NO3PorewaterAerobic_KB_Layer1
             WRITE(CEMASedFlxFilN23,'(A,f10.3,A)', ADVANCE='NO') 'NO3PorewaterAerobic_KB_Layer1(mgNL-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN23,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,3)
             END DO
             WRITE(CEMASedFlxFilN23,'(A)') ''  ! End line
+
+            ! NO3PorewaterAnaerobic_KB_Layer2
             WRITE(CEMASedFlxFilN24,'(A,f10.3,A)', ADVANCE='NO') 'NO3PorewaterAnaerobic_KB_Layer2(mgNL-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN24,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,4)
             END DO
             WRITE(CEMASedFlxFilN24,'(A)') ''  ! End line
+
+            ! NH3PorewaterAerobic_KB_Layer1
             WRITE(CEMASedFlxFilN25,'(A,f10.3,A)', ADVANCE='NO') 'NH3PorewaterAerobic_KB_Layer1(mgNL-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN25,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,1)
             END DO
             WRITE(CEMASedFlxFilN25,'(A)') ''  ! End line
+
+            ! NH3PorewaterAnaerobic_KB_Layer2
             WRITE(CEMASedFlxFilN26,'(A,f10.3,A)', ADVANCE='NO') 'NH3PorewaterAnaerobic_KB_Layer2(mgNL-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN26,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,2)
             END DO
             WRITE(CEMASedFlxFilN26,'(A)') ''  ! End line
+
+            ! PO4PorewaterAerobic_KB_Layer1
             WRITE(CEMASedFlxFilN27,'(A,f10.3,A)', ADVANCE='NO') 'PO4PorewaterAerobic_KB_Layer1(mgPL-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN27,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,5)
             END DO
             WRITE(CEMASedFlxFilN27,'(A)') ''  ! End line
+
+            ! PO4PorewaterAnaerobic_KB_Layer2
             WRITE(CEMASedFlxFilN28,'(A,f10.3,A)', ADVANCE='NO') 'PO4PorewaterAnaerobic_KB_Layer2(mgPL-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN28,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,6)
             END DO
             WRITE(CEMASedFlxFilN28,'(A)') ''  ! End line
+
+            ! SO4PorewaterAerobic_KB_Layer1
             WRITE(CEMASedFlxFilN29,'(A,f10.3,A)', ADVANCE='NO') 'SO4PorewaterAerobic_KB_Layer1(mgSL-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN29,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,9)
             END DO
             WRITE(CEMASedFlxFilN29,'(A)') ''  ! End line
+
+            ! SO4PorewaterAnaerobic_KB_Layer2
             WRITE(CEMASedFlxFilN30,'(A,f10.3,A)', ADVANCE='NO') 'SO4PorewaterAnaerobic_KB_Layer2(mgSL-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN30,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,10)
             END DO
             WRITE(CEMASedFlxFilN30,'(A)') ''  ! End line
 
+            ! FEIIPorewaterAerobic_KB_Layer1
             WRITE(CEMASedFlxFilN31,'(A,f10.3,A)', ADVANCE='NO') 'FEIIPorewaterAerobic_KB_Layer1(mgFeL-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN31,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,30)
             END DO
             WRITE(CEMASedFlxFilN31,'(A)') ''  ! End line
+
+            ! FEIIPorewaterAnaerobic_KB_Layer2
             WRITE(CEMASedFlxFilN32,'(A,f10.3,A)', ADVANCE='NO') 'FEIIPorewaterAnaerobic_KB_Layer2(mgFeL-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN32,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,31)
             END DO
             WRITE(CEMASedFlxFilN32,'(A)') ''  ! End line
+
+            ! MnIIPorewaterAerobic_KB_Layer1
             WRITE(CEMASedFlxFilN33,'(A,f10.3,A)', ADVANCE='NO') 'MnIIPorewaterAerobic_KB_Layer1(mgMnL-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN33,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,34)
             END DO
             WRITE(CEMASedFlxFilN33,'(A)') ''  ! End line
+
+            ! MnIIPorewaterAnaerobic_KB_Layer2
             WRITE(CEMASedFlxFilN34,'(A,f10.3,A)', ADVANCE='NO') 'MnIIPorewaterAnaerobic_KB_Layer2(mgMnL-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN34,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,35)
             END DO
             WRITE(CEMASedFlxFilN34,'(A)') ''  ! End line
+
+            ! CH4PorewaterAerobic_KB_Layer1
             WRITE(CEMASedFlxFilN35,'(A,f10.3,A)', ADVANCE='NO') 'CH4PorewaterAerobic_KB_Layer1(mgO2L-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN35,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,7)
             END DO
             WRITE(CEMASedFlxFilN35,'(A)') ''  ! End line
+
+            ! CH4PorewaterAnaerobic_KB_Layer2
             WRITE(CEMASedFlxFilN36,'(A,f10.3,A)', ADVANCE='NO') 'CH4PorewaterAnaerobic_KB_Layer2(mgO2L-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN36,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,8)
             END DO
             WRITE(CEMASedFlxFilN36,'(A)') ''  ! End line
 
+            ! pHPorewaterAerobic_KB_Layer1
             WRITE(CEMASedFlxFilN37,'(A,f10.3,A)', ADVANCE='NO') 'pHPorewaterAerobic_KB_Layer1,',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN37,'(f10.3,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,17)
             END DO
             WRITE(CEMASedFlxFilN37,'(A)') ''  ! End line
+
+            ! pHPorewaterAnaerobic_KB_Layer2
             WRITE(CEMASedFlxFilN38,'(A,f10.3,A)', ADVANCE='NO') 'pHPorewaterAnaerobic_KB_Layer2,',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN38,'(f10.3,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,18)
             END DO
             WRITE(CEMASedFlxFilN38,'(A)') ''  ! End line
+
+            ! SulfidePorewaterAerobic_KB_Layer1
             WRITE(CEMASedFlxFilN39,'(A,f10.3,A)', ADVANCE='NO') 'SulfidePorewaterAerobic_KB_Layer1(mgO2L-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN39,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,11)
             END DO
             WRITE(CEMASedFlxFilN39,'(A)') ''  ! End line
+
+            ! SulfidePorewaterAnaerobic_KB_Layer2
             WRITE(CEMASedFlxFilN40,'(A,f10.3,A)', ADVANCE='NO') 'SulfidePorewaterAnaerobic_KB_Layer2(mgO2L-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN40,'(f10.2,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,12)
             END DO
             WRITE(CEMASedFlxFilN40,'(A)') ''  ! End line
+
+            ! TransferVelocitySedimentLayer1_to_Water
             WRITE(CEMASedFlxFilN41,'(A,f10.3,A)', ADVANCE='NO') 'TransferVelocitySedimentLayer1_to_Water(md-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN41,'(f10.5,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,38)
             END DO
             WRITE(CEMASedFlxFilN41,'(A)') ''  ! End line
+
             !Write(CEMASedFlxFilN42,'("TransferVelocitySedimentLayer1_to_Layer2(md-1),",f10.3,",",A,",",<IMX>(f10.5,","),A,",",<IMX>(f10.5,","))')JDAY,'SD_KL12',(C2SF(KBI(SegNumI),SegNumI,39), SegNumI = 1, IMX),'SD_W12',(C2SF(KBI(SegNumI),SegNumI,40), SegNumI = 1, IMX)
+            ! TransferVelocitySedimentLayer1_to_Layer2_KL12
             WRITE(CEMASedFlxFilN42,'(A,f10.3,A)', ADVANCE='NO') 'TransferVelocitySedimentLayer1_to_Layer2_KL12(md-1),',JDAY,','
             DO SegNumI = 1, IMX
+              WRITE(CEMASedFlxFilN42,'(f10.5,",")', ADVANCE='NO') C2SF(KBI(SegNumI),SegNumI,39)
             END DO
             WRITE(CEMASedFlxFilN42,'(A)') ''  ! End line
             ! Write header and JDAY
