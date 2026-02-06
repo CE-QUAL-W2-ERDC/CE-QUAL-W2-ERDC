@@ -299,31 +299,63 @@ IF(LAKE_RIVER_CONTOUR_ON=='ON')THEN    ! SW 2/28/2020
           END IF  
         END IF 
      ELSE      ! SW 4/4/2018
-        IF (ICE_COMPUTATION) THEN  
-          IF(SEDIMENT_CALC(JW))THEN  
-            WRITE (TSR(J),'(f10.3,",",19(F10.3,","),*(F10.1,","))') JDAY,DLT,ELWS(I),-99.,-99.,QC(I),SRON1*1.06,-99.,DEPTHB(KB(I),I),    &     ! SW 8/13/06  
-            BI(KTWB(JW),I),SHADE(I),ICETH(I),TVOLAVG,rn(i),rs(i),RANLW1,rb(i),re(i),rc(i),REAER(I)*86400.,(-99.,JAC=1,NAC),                      &  ! CB 7/26/07
-            (-99.,JE=1,NEP),(-99.,JM=1,NMC), SED(K,I),SEDP(K,I),SEDN(K,I),SEDC(K,I),               &                                !SEDCH,SEDPCH,SEDNCH,SEDCCH, &  
-            (-99.,JAD=1,NACD(JW)),(-99.,JF=1,NAF(JW)),(-99.,JA=1,NAL),(-99.,JA=1,NAL),(-99.,JA=1,NAL)     ! SW 10/20/15 
-          ELSE  
-            WRITE (TSR(J),'(f10.3,",",19(F10.3,","),*(F10.1,","))') JDAY,DLT,ELWS(I),-99.,-99.,QC(I),SRON1*1.06,-99.,DEPTHB(KB(I),I),      &     ! SW 8/13/06  
-            BI(KTWB(JW),I),SHADE(I),ICETH(I),TVOLAVG,rn(i),rs(i),RANLW1,rb(i),re(i),rc(i),REAER(I)*86400.,(-99.,JAC=1,NAC),                      &  ! CB 7/26/07
-            (-99.,JE=1,NEP),(-99.,JM=1,NMC),                            &  
-            (-99.,JAD=1,NACD(JW)),(-99.,JF=1,NAF(JW)),(-99.,JA=1,NAL),(-99.,JA=1,NAL),(-99.,JA=1,NAL)     ! SW 10/20/15  
-          END IF  
-        ELSE  
-          IF(SEDIMENT_CALC(JW))THEN  
-            WRITE (TSR(J),'(f10.3,",",18(F10.3,","),*(F10.1,","))') JDAY,DLT,ELWS(I),-99.,-99.,QC(I),SRON1*1.06,-99.,DEPTHB(KB(I),I),    &     ! SW 8/13/06  
-            BI(KTWB(JW),I),SHADE(I),TVOLAVG,rn(i),rs(i),RANLW1,rb(i),re(i),rc(i),REAER(I)*86400.,(-99.,JAC=1,NAC),                      &  ! CB 7/26/07
-            (-99.,JE=1,NEP),(-99.,JM=1,NMC), SED(K,I),SEDP(K,I),SEDN(K,I),SEDC(K,I),               &                                  !SEDCH,SEDPCH,SEDNCH,SEDCCH, &  
-            (-99.,JAD=1,NACD(JW)),(-99.,JF=1,NAF(JW)),(-99.,JA=1,NAL),(-99.,JA=1,NAL),(-99.,JA=1,NAL)    ! SW 10/20/15 
-          ELSE  
-            WRITE (TSR(J),'(f10.3,",",18(F10.3,","),*(F10.1,","))') JDAY,DLT,ELWS(I),-99.,-99.,QC(I),SRON1*1.06,-99.,DEPTHB(KB(I),I),      &     ! SW 8/13/06  
-            BI(KTWB(JW),I),SHADE(I),TVOLAVG,rn(i),rs(i),RANLW1,rb(i),re(i),rc(i),REAER(I)*86400.,(-99.,JAC=1,NAC),                      &  ! CB 7/26/07
-            (-99.,JE=1,NEP),(-99.,JM=1,NMC),                            &  
-            (-99.,JAD=1,NACD(JW)),(-99.,JF=1,NAF(JW)),(-99.,JA=1,NAL),(-99.,JA=1,NAL),(-99.,JA=1,NAL)    ! SW 10/20/15  
-          END IF  
-        END IF        
+        IF (ICE_COMPUTATION) THEN
+          IF(SEDIMENT_CALC(JW))THEN
+            IF(NEP>0 .AND. EPIPHYTON_CALC(JW,1))THEN
+              WRITE (TSR(J),'(f10.3,",",19(F10.3,","),*(F10.1,","))') JDAY,DLT,ELWS(I),-99.,-99.,QC(I),SRON1*1.06,-99.,DEPTHB(KB(I),I),    &
+              BI(KTWB(JW),I),SHADE(I),ICETH(I),TVOLAVG,rn(i),rs(i),RANLW1,rb(i),re(i),rc(i),REAER(I)*86400.,(-99.,JAC=1,NAC),                      &
+              (-99.,JE=1,NEP),(-99.,JM=1,NMC), SED(K,I),SEDP(K,I),SEDN(K,I),SEDC(K,I),               &
+              (-99.,JAD=1,NACD(JW)),(-99.,JF=1,NAF(JW)),(-99.,JA=1,NAL),(-99.,JA=1,NAL),(-99.,JA=1,NAL),   &
+              (-99.,JE=1,NEP),(-99.,JE=1,NEP),(-99.,JE=1,NEP)
+            ELSE
+              WRITE (TSR(J),'(f10.3,",",19(F10.3,","),*(F10.1,","))') JDAY,DLT,ELWS(I),-99.,-99.,QC(I),SRON1*1.06,-99.,DEPTHB(KB(I),I),    &
+              BI(KTWB(JW),I),SHADE(I),ICETH(I),TVOLAVG,rn(i),rs(i),RANLW1,rb(i),re(i),rc(i),REAER(I)*86400.,(-99.,JAC=1,NAC),                      &
+              (-99.,JM=1,NMC), SED(K,I),SEDP(K,I),SEDN(K,I),SEDC(K,I),               &
+              (-99.,JAD=1,NACD(JW)),(-99.,JF=1,NAF(JW)),(-99.,JA=1,NAL),(-99.,JA=1,NAL),(-99.,JA=1,NAL)
+            ENDIF
+          ELSE
+            IF(NEP>0 .AND. EPIPHYTON_CALC(JW,1))THEN
+              WRITE (TSR(J),'(f10.3,",",19(F10.3,","),*(F10.1,","))') JDAY,DLT,ELWS(I),-99.,-99.,QC(I),SRON1*1.06,-99.,DEPTHB(KB(I),I),      &
+              BI(KTWB(JW),I),SHADE(I),ICETH(I),TVOLAVG,rn(i),rs(i),RANLW1,rb(i),re(i),rc(i),REAER(I)*86400.,(-99.,JAC=1,NAC),                      &
+              (-99.,JE=1,NEP),(-99.,JM=1,NMC),                            &
+              (-99.,JAD=1,NACD(JW)),(-99.,JF=1,NAF(JW)),(-99.,JA=1,NAL),(-99.,JA=1,NAL),(-99.,JA=1,NAL),   &
+              (-99.,JE=1,NEP),(-99.,JE=1,NEP),(-99.,JE=1,NEP)
+            ELSE
+              WRITE (TSR(J),'(f10.3,",",19(F10.3,","),*(F10.1,","))') JDAY,DLT,ELWS(I),-99.,-99.,QC(I),SRON1*1.06,-99.,DEPTHB(KB(I),I),      &
+              BI(KTWB(JW),I),SHADE(I),ICETH(I),TVOLAVG,rn(i),rs(i),RANLW1,rb(i),re(i),rc(i),REAER(I)*86400.,(-99.,JAC=1,NAC),                      &
+              (-99.,JM=1,NMC),                            &
+              (-99.,JAD=1,NACD(JW)),(-99.,JF=1,NAF(JW)),(-99.,JA=1,NAL),(-99.,JA=1,NAL),(-99.,JA=1,NAL)
+            ENDIF
+          END IF
+        ELSE
+          IF(SEDIMENT_CALC(JW))THEN
+            IF(NEP>0 .AND. EPIPHYTON_CALC(JW,1))THEN
+              WRITE (TSR(J),'(f10.3,",",18(F10.3,","),*(F10.1,","))') JDAY,DLT,ELWS(I),-99.,-99.,QC(I),SRON1*1.06,-99.,DEPTHB(KB(I),I),    &
+              BI(KTWB(JW),I),SHADE(I),TVOLAVG,rn(i),rs(i),RANLW1,rb(i),re(i),rc(i),REAER(I)*86400.,(-99.,JAC=1,NAC),                      &
+              (-99.,JE=1,NEP),(-99.,JM=1,NMC), SED(K,I),SEDP(K,I),SEDN(K,I),SEDC(K,I),               &
+              (-99.,JAD=1,NACD(JW)),(-99.,JF=1,NAF(JW)),(-99.,JA=1,NAL),(-99.,JA=1,NAL),(-99.,JA=1,NAL),   &
+              (-99.,JE=1,NEP),(-99.,JE=1,NEP),(-99.,JE=1,NEP)
+            ELSE
+              WRITE (TSR(J),'(f10.3,",",18(F10.3,","),*(F10.1,","))') JDAY,DLT,ELWS(I),-99.,-99.,QC(I),SRON1*1.06,-99.,DEPTHB(KB(I),I),    &
+              BI(KTWB(JW),I),SHADE(I),TVOLAVG,rn(i),rs(i),RANLW1,rb(i),re(i),rc(i),REAER(I)*86400.,(-99.,JAC=1,NAC),                      &
+              (-99.,JM=1,NMC), SED(K,I),SEDP(K,I),SEDN(K,I),SEDC(K,I),               &
+              (-99.,JAD=1,NACD(JW)),(-99.,JF=1,NAF(JW)),(-99.,JA=1,NAL),(-99.,JA=1,NAL),(-99.,JA=1,NAL)
+            ENDIF
+          ELSE
+            IF(NEP>0 .AND. EPIPHYTON_CALC(JW,1))THEN
+              WRITE (TSR(J),'(f10.3,",",18(F10.3,","),*(F10.1,","))') JDAY,DLT,ELWS(I),-99.,-99.,QC(I),SRON1*1.06,-99.,DEPTHB(KB(I),I),      &
+              BI(KTWB(JW),I),SHADE(I),TVOLAVG,rn(i),rs(i),RANLW1,rb(i),re(i),rc(i),REAER(I)*86400.,(-99.,JAC=1,NAC),                      &
+              (-99.,JE=1,NEP),(-99.,JM=1,NMC),                            &
+              (-99.,JAD=1,NACD(JW)),(-99.,JF=1,NAF(JW)),(-99.,JA=1,NAL),(-99.,JA=1,NAL),(-99.,JA=1,NAL),   &
+              (-99.,JE=1,NEP),(-99.,JE=1,NEP),(-99.,JE=1,NEP)
+            ELSE
+              WRITE (TSR(J),'(f10.3,",",18(F10.3,","),*(F10.1,","))') JDAY,DLT,ELWS(I),-99.,-99.,QC(I),SRON1*1.06,-99.,DEPTHB(KB(I),I),      &
+              BI(KTWB(JW),I),SHADE(I),TVOLAVG,rn(i),rs(i),RANLW1,rb(i),re(i),rc(i),REAER(I)*86400.,(-99.,JAC=1,NAC),                      &
+              (-99.,JM=1,NMC),                            &
+              (-99.,JAD=1,NACD(JW)),(-99.,JF=1,NAF(JW)),(-99.,JA=1,NAL),(-99.,JA=1,NAL),(-99.,JA=1,NAL)
+            ENDIF
+          END IF
+        END IF
      ENDIF   ! SW 4/4/2018
      
     IF(ALGAE_TOXIN)THEN

@@ -1037,22 +1037,22 @@ ENDIF
             'DEPTH(m)','WIDTH(m)','SHADE','ICETH(m)',                         &
             'Tvolavg(C)','NetRad(Wm-2)','SWSolar(Wm-2)','LWRad(Wm-2)','BackRad(Wm-2)','EvapF(Wm-2)','ConducF(Wm-2)','ReaerationCoeff(day-1)',   &
             (CNAME2(CN(JC)),JC=1,NAC),                                           &  
-            ('     EPI',JE=1,NEP),('     MAC',JM=1,NMC),'     SED(Organic matter in sediments g/m3)','    SEDP(OrgP in sediments gP/m3)','    SEDN(OrgN in sediments gN/m3)','    SEDC(OrgCSediments gC/m3)',   &  
-            (CDNAME2(CDN(JD,JW)),JD=1,NACD(JW)),(KFNAME2(KFCN(JF,JW)),JF=1,NAF(JW)),('PLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('NLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('LLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL)  
+            ('     MAC',JM=1,NMC),'     SED(Organic matter in sediments g/m3)','    SEDP(OrgP in sediments gP/m3)','    SEDN(OrgN in sediments gN/m3)','    SEDC(OrgCSediments gC/m3)',   &
+            (CDNAME2(CDN(JD,JW)),JD=1,NACD(JW)),(KFNAME2(KFCN(JF,JW)),JF=1,NAF(JW)),('PLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('NLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('LLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL)
               ENDIF
-              
-          ELSE  
+
+          ELSE
                             IF(NEP>0 .AND. EPIPHYTON_CALC(JW,1))THEN
             WRITE (TSR(J),'(*(A,","))') 'JDAY','DLT(s)','ELWS(m)','T2(C)','U(ms-1)','Q(m3s-1)','SRON(Wm-2)','EXT(m-1)',   &  
             'DEPTH(m)','WIDTH(m)','SHADE','ICETH(m)','Tvolavg(C)','NetRad(Wm-2)','SWSolar(Wm-2)','LWRad(Wm-2)','BackRad(Wm-2)','EvapF(Wm-2)','ConducF(Wm-2)','ReaerationCoeff(day-1)',  (CNAME2(CN(JC)),JC=1,NAC),                     &  
             ('     EPI(g/m2)',JE=1,NEP),('     MAC',JM=1,NMC),(CDNAME2(CDN(JD,JW)),JD=1,NACD(JW)),(KFNAME2(KFCN(JF,JW)),JF=1,NAF(JW)),('PLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('NLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('LLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),   &
               ('EPLIM_'//CNUM(JE),JE=1,NEP),('ENLIM_'//CNUM(JE),JE=1,NEP),('ELLIM_'//CNUM(JE),JE=1,NEP)    
                             ELSE
-                        WRITE (TSR(J),'(*(A,","))') 'JDAY','DLT(s)','ELWS(m)','T2(C)','U(ms-1)','Q(m3s-1)','SRON(Wm-2)','EXT(m-1)',   &  
-            'DEPTH(m)','WIDTH(m)','SHADE','ICETH(m)','Tvolavg(C)','NetRad(Wm-2)','SWSolar(Wm-2)','LWRad(Wm-2)','BackRad(Wm-2)','EvapF(Wm-2)','ConducF(Wm-2)','ReaerationCoeff(day-1)',  (CNAME2(CN(JC)),JC=1,NAC),                     &  
-            ('     EPI',JE=1,NEP),('     MAC',JM=1,NMC),(CDNAME2(CDN(JD,JW)),JD=1,NACD(JW)),(KFNAME2(KFCN(JF,JW)),JF=1,NAF(JW)),('PLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('NLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('LLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL)     ! SW 10/20/15                      
+                        WRITE (TSR(J),'(*(A,","))') 'JDAY','DLT(s)','ELWS(m)','T2(C)','U(ms-1)','Q(m3s-1)','SRON(Wm-2)','EXT(m-1)',   &
+            'DEPTH(m)','WIDTH(m)','SHADE','ICETH(m)','Tvolavg(C)','NetRad(Wm-2)','SWSolar(Wm-2)','LWRad(Wm-2)','BackRad(Wm-2)','EvapF(Wm-2)','ConducF(Wm-2)','ReaerationCoeff(day-1)',  (CNAME2(CN(JC)),JC=1,NAC),                     &
+            ('     MAC',JM=1,NMC),(CDNAME2(CDN(JD,JW)),JD=1,NACD(JW)),(KFNAME2(KFCN(JF,JW)),JF=1,NAF(JW)),('PLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('NLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('LLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL)     ! SW 10/20/15
                             ENDIF
-                            
+
          END IF  
         ELSE  
           IF(SEDIMENT_CALC(JW))THEN  !mlm 7/25/06
@@ -1064,14 +1064,14 @@ ENDIF
             (CDNAME2(CDN(JD,JW)),JD=1,NACD(JW)),(KFNAME2(KFCN(JF,JW)),JF=1,NAF(JW)),('PLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('NLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('LLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),   &
               ('EPLIM_'//CNUM(JE),JE=1,NEP),('ENLIM_'//CNUM(JE),JE=1,NEP),('ELLIM_'//CNUM(JE),JE=1,NEP)                   
                ELSE
-             WRITE (TSR(J),'(*(A,","))')'JDAY','DLT(s)','ELWS(m)','T2(C)','U(ms-1)','Q(m3s-1)','SRON(Wm-2)','EXT(m-1)',   &  
+             WRITE (TSR(J),'(*(A,","))')'JDAY','DLT(s)','ELWS(m)','T2(C)','U(ms-1)','Q(m3s-1)','SRON(Wm-2)','EXT(m-1)',   &
             'DEPTH(m)','WIDTH(m)','SHADE','Tvolavg(C)','NetRad(Wm-2)','SWSolar(Wm-2)','LWRad(Wm-2)','BackRad(Wm-2)','EvapF(Wm-2)','ConducF(Wm-2)','ReaerationCoeff(day-1)',   &
-            (CNAME2(CN(JC)),JC=1,NAC),                     &  
-            ('     EPI',JE=1,NEP),('     MAC',JM=1,NMC),'     SED(Organic matter in sediments g/m3)','    SEDP(OrgP in sediments gP/m3)','    SEDN(OrgN in sediments gN/m3)','    SEDC(OrgCSediments gC/m3)',   &  
-            (CDNAME2(CDN(JD,JW)),JD=1,NACD(JW)),(KFNAME2(KFCN(JF,JW)),JF=1,NAF(JW)),('PLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('NLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('LLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL)   
+            (CNAME2(CN(JC)),JC=1,NAC),                     &
+            ('     MAC',JM=1,NMC),'     SED(Organic matter in sediments g/m3)','    SEDP(OrgP in sediments gP/m3)','    SEDN(OrgN in sediments gN/m3)','    SEDC(OrgCSediments gC/m3)',   &
+            (CDNAME2(CDN(JD,JW)),JD=1,NACD(JW)),(KFNAME2(KFCN(JF,JW)),JF=1,NAF(JW)),('PLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('NLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('LLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL)
                ENDIF
-               
-          ELSE  
+
+          ELSE
             IF(NEP>0 .AND. EPIPHYTON_CALC(JW,1))THEN
             WRITE (TSR(J),'(*(A,","))') 'JDAY','DLT(s)','ELWS(m)','T2(C)','U(ms-1)','Q(m3s-1)','SRON(Wm-2)','EXT(m-1)',   &  
              'DEPTH(m)','WIDTH(m)','SHADE','Tvolavg(C)','NetRad(Wm-2)','SWSolar(Wm-2)','LWRad(Wm-2)','BackRad(Wm-2)','EvapF(Wm-2)','ConducF(Wm-2)','ReaerationCoeff(day-1)',   &
@@ -1079,13 +1079,13 @@ ENDIF
             ('     EPI(g/m2)',JE=1,NEP),('     MAC',JM=1,NMC),(CDNAME2(CDN(JD,JW)),JD=1,NACD(JW)),(KFNAME2(KFCN(JF,JW)),JF=1,NAF(JW)),('PLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('NLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('LLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),   &
              ('EPLIM_'//CNUM(JE),JE=1,NEP),('ENLIM_'//CNUM(JE),JE=1,NEP),('ELLIM_'//CNUM(JE),JE=1,NEP)                   
             ELSE
-            WRITE (TSR(J),'(*(A,","))') 'JDAY','DLT(s)','ELWS(m)','T2(C)','U(ms-1)','Q(m3s-1)','SRON(Wm-2)','EXT(m-1)',   &  
+            WRITE (TSR(J),'(*(A,","))') 'JDAY','DLT(s)','ELWS(m)','T2(C)','U(ms-1)','Q(m3s-1)','SRON(Wm-2)','EXT(m-1)',   &
              'DEPTH(m)','WIDTH(m)','SHADE','Tvolavg(C)','NetRad(Wm-2)','SWSolar(Wm-2)','LWRad(Wm-2)','BackRad(Wm-2)','EvapF(Wm-2)','ConducF(Wm-2)','ReaerationCoeff(day-1)',   &
-            (CNAME2(CN(JC)),JC=1,NAC),                     &  
-            ('     EPI',JE=1,NEP),('     MAC',JM=1,NMC),(CDNAME2(CDN(JD,JW)),JD=1,NACD(JW)),(KFNAME2(KFCN(JF,JW)),JF=1,NAF(JW)),('PLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('NLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('LLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL)  
+            (CNAME2(CN(JC)),JC=1,NAC),                     &
+            ('     MAC',JM=1,NMC),(CDNAME2(CDN(JD,JW)),JD=1,NACD(JW)),(KFNAME2(KFCN(JF,JW)),JF=1,NAF(JW)),('PLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('NLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL),('LLIM_'//ADJUSTL(CNAME2(NAS+JA-1)),JA=1,NAL)
             ENDIF
-            
-          END IF  
+
+          END IF
         END IF  
           
       END DO  
