@@ -39,9 +39,12 @@ USE GLOBAL;     USE NAMESC; USE GEOMC;  USE LOGICC; USE PREC;  USE SURFHE;  USE 
   sdfirstadd=.true.   ! cb 9/3/17
   BR_NOTECPLOT=.TRUE.    ! SW 8/27/2019
   IF(ALLOCATED(QWDSAV)) QWDSAV = 0.0D0                                                                                !SR 06/29/2021
-  IF(ALLOCATED(FHA))    FHA    = 0.0D0
-  IF(ALLOCATED(FHASAV)) FHASAV = 0.0D0
-  IF(ALLOCATED(JBHA))   JBHA   = 0                   !> sch 22Jan2026. Algal harvesting option variables.
+  IF(ALLOCATED(FHA))          FHA          = 0.0D0
+  IF(ALLOCATED(FHASAV))       FHASAV       = 0.0D0
+  IF(ALLOCATED(JBHA))         JBHA         = 0                   !> sch 22Jan2026. Algal harvesting option variables.
+  IF(ALLOCATED(HADEP))        HADEP        = 0.0D0               !> H-02: Default harvest depth = 0 (all layers).
+  IF(ALLOCATED(HAMASS_EVENT)) HAMASS_EVENT = 0.0D0               !> H-03: Per-event harvested mass.
+  IF(ALLOCATED(HAMASS_CUM))   HAMASS_CUM   = 0.0D0               !> H-03: Cumulative harvested mass.
 
   IF (.NOT. RESTART_IN) THEN
     BR_INACTIVE=.FALSE.; WARNING_OPEN          = .FALSE.;JDMIN=0; EPC=0.0; NXTMUK=TMSTRT
@@ -127,6 +130,11 @@ USE GLOBAL;     USE NAMESC; USE GEOMC;  USE LOGICC; USE PREC;  USE SURFHE;  USE 
   PUMPS                 =  NPU > 0; SPILLWAY = NSP > 0; TRIBUTARIES = NTR > 0
   WITHDRAWALS           =  NWD > 0
   HARVESTING            =  NHF > 0               !> sch 29Jan2025. Algal harvesting option. Set algal harvesting true if at least one harvesting segment location has been read.
+!> H-03: Open harvest mass output file
+  IF (HARVESTING) THEN
+    OPEN (9923, FILE='harvest_mass_output.csv', STATUS='UNKNOWN')
+    WRITE (9923,'(A)') 'JDAY,Segment,Fraction,Event_Mass_kg,Cumulative_Mass_kg'
+  END IF
   VOLUME_BALANCE        = VBC         == '      ON'
   PLACE_QIN             = PQC         == '      ON'; EVAPORATION        = EVC    == '      ON'
   ENERGY_BALANCE        = EBC         == '      ON'; RH_EVAP            = RHEVC  == '      ON'

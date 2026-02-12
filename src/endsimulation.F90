@@ -321,7 +321,9 @@ IF (ERROR_OPEN) THEN                                           ! modified to be 
   DEALLOCATE (B2SP,   AGASSP, BGASSP, CGASSP, EQSP,   GASSPC, JBUSP,  JBDSP,  STRTPU, ENDPU,  EONPU,  EOFFPU, QPU,    PPUC)
   DEALLOCATE (IUPU,   IDPU,   EPU,    ETPU,   EBPU,   KTPU,   KBPU,   JWUPU,  JWDPU,  JBUPU,  JBDPU,  PUMPON, KTW,    KBW, PUMP_DOWNSTREAM)
   DEALLOCATE (IWD,    KWD,    QWD,    EWD,    ITR,    QTRFN,  TTRFN,  CTRFN,  ELTRT,  ELTRB,  TRC,    JBTR,   QTRF,   CLRB)
-  DEALLOCATE (JBHA,   IHA,    FHA)  !>,    HAIC)  !> sch 24July2025 Algal harvesting option variables. HAIC no longer applicable.
+  DEALLOCATE (JBHA,   IHA,    FHA,  HADEP)           !> Algal harvesting option variables. HADEP added for H-02.
+  DEALLOCATE (HAMASS_EVENT, HAMASS_CUM)              !> H-03: Harvested mass tracking arrays.
+  IF (HARVESTING) CLOSE (9923)                       !> H-03: Close harvest mass output file.
   DEALLOCATE (TTLB,   TTRB,   CLLB,   SRLB1,  SRRB1,  SRLB2,  SRRB2,  SRFJD1, SHADEI, SRFJD2, TOPO,   QSW,    CTR)    ! SW 10/17/05
   DEALLOCATE (H1,     H2,     BH1,    BH2,    BHR1,   BHR2,   AVH1,   AVH2,   SAVH2,  AVHR,   SAVHR,  CBODD, BHRATIO)
   DEALLOCATE (POINT_SINK,         HPRWBC,   READ_EXTINCTION, READ_RADIATION)

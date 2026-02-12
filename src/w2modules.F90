@@ -194,6 +194,8 @@ MODULE TVDC
   REAL(R8),              ALLOCATABLE, DIMENSION(:,:,:)   :: CUH,    CDH
   REAL(R8),              ALLOCATABLE, DIMENSION(:)       :: QWD,    QWDSAV                                                !SR 06/29/2021
   REAL(R8),              ALLOCATABLE, DIMENSION(:)       :: FHA,    FHASAV                !> sch 29Jan2025. Algal harvesting option variable. Using withdrawal capability as template for harvesting option (see QWD, QWDSAV)
+  REAL(R8),              ALLOCATABLE, DIMENSION(:)       :: HADEP                         !> H-02: Maximum harvest depth (m) per segment. 0 = harvest all layers.
+  REAL(R8),              ALLOCATABLE, DIMENSION(:)       :: HAMASS_EVENT, HAMASS_CUM       !> H-03: Per-event and cumulative harvested mass (g) per segment.
   INTEGER                                            :: NAC,    NOPEN
   INTEGER,           ALLOCATABLE, DIMENSION(:)       :: NACPR,  NACIN,  NACDT,  NACTR,  NACD,   CN, CDNN
   INTEGER,           ALLOCATABLE, DIMENSION(:,:)     :: TRCN,   INCN,   DTCN,   PRCN

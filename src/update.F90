@@ -6,7 +6,10 @@ USE GLOBAL;     USE NAMESC; USE GEOMC;  USE LOGICC; USE PREC;  USE SURFHE;  USE 
   USE MACROPHYTEC; USE POROSITYC; USE ZOOPLANKTONC; USE CEMAVars, ONLY: SD_TC, JDAY_INIT  
   IMPLICIT NONE
   EXTERNAL RESTART_OUTPUT
-  INTEGER :: HARVEST_APPLIED               !< sch 27Aug2025 Local switch used to track if harvesting is applied.
+  LOGICAL :: HARVEST_EVENT_APPLIED          !< H-01: True if any harvest was applied this timestep
+  REAL(R8) :: REMOVED                      !< H-03: Concentration removed from a cell (g/m3)
+  REAL(R8) :: CELL_VOL                     !< H-03: Cell volume (m3)
+  REAL(R8) :: DEPTH_BELOW_SURFACE          !< H-02: Depth of layer center below water surface (m)
 
 !***********************************************************************************************************************************
 !*                                       Task 2.7: Variable updates for next timestep                                             **
@@ -60,6 +63,8 @@ USE GLOBAL;     USE NAMESC; USE GEOMC;  USE LOGICC; USE PREC;  USE SURFHE;  USE 
       END DO
     END DO
     IF (CONSTITUENTS) THEN
+      HARVEST_EVENT_APPLIED = .FALSE.                                      !> H-01: Initialize harvest tracking flag before spatial loops
+      IF (HARVESTING) HAMASS_EVENT(1:NHF) = 0.0D0                         !> H-03: Reset per-event mass accumulators
       DO JW=1,NWB
         KT = KTWB(JW)
         DO JB=BS(JW),BE(JW)
@@ -88,51 +93,56 @@ USE GLOBAL;     USE NAMESC; USE GEOMC;  USE LOGICC; USE PREC;  USE SURFHE;  USE 
                   SEDC(K,I) = DMAX1(SEDC(K,I),0.0D0)
                 END IF
 
-!> sch 27Aug2025. Start algal harvesting option. 
-!  Apply the harvesting reduction while in the loop through the algae state variables.
-!  Harvesting is instananeous, so apply it directly to the current algae concentrations in the C1 array that stores state variable concentrations.
-!  Also, do the check for low DO - high mortality minimum algae in here (more efficient).
-                IF (CN(JC) >= NAS   .AND. CN(JC) <= NAE) THEN            ! Check to see if JC is one of the algae state variables.			  
-		 	      HARVEST_APPLIED = 0              !> Make sure switch is zero, so that harvesting can occur
-                  IF (HARVESTING) THEN             !> sch 28Jan2025. If algal harvesting is active, then locate and apply the user-input fractional reductions to their associated segments.
-                    DO JHA=1,NHF                            
+!> H-01/H-02/H-03: Algal harvesting with depth-limited removal and mass tracking.
+!  Harvesting is instantaneous: apply fractional reduction to algae C1 values.
+!  FHA is zeroed after all spatial loops complete (H-01 fix for multi-segment harvesting).
+                IF (CN(JC) >= NAS .AND. CN(JC) <= NAE) THEN               ! Check if JC is an algae state variable
+                  IF (HARVESTING) THEN
+                    DO JHA=1,NHF
                       IF (FHA(JHA) /= 0.0) THEN
                         IF (JB == JBHA(JHA) .AND. I == IHA(JHA)) THEN
-!xxx                            write (9922, *) CN(JC), K, I, JHA, C1(K,I,CN(JC)), FHA(JHA)
-						    C1(K,I,CN(JC)) = C1(K,I,CN(JC)) * (1.0 - FHA(JHA))               ! Apply harvesting to current C1 array algae concentrations. Let C1S and C2 updates occur as normal, below.
-						    HARVEST_APPLIED = 1
-!xxx					        write (9922, *) C1(K,I,CN(JC)), HARVEST_APPLIED							
-				 	    END IF
+!>                        H-02: Depth-limited harvesting. Skip layers deeper than HADEP (0 = no limit).
+                          IF (HADEP(JHA) > 0.0D0) THEN
+                            DEPTH_BELOW_SURFACE = ELWS(I) - (EL(K,I) - H(K,I) * 0.5D0)
+                            IF (DEPTH_BELOW_SURFACE > HADEP(JHA)) CYCLE
+                          END IF
+!>                        H-03: Compute removed mass before modifying C1
+                          REMOVED  = C1(K,I,CN(JC)) * FHA(JHA)
+                          CELL_VOL = BH1(K,I) * DLX(I)
+                          HAMASS_EVENT(JHA) = HAMASS_EVENT(JHA) + REMOVED * CELL_VOL
+!>                        Apply harvesting reduction
+                          C1(K,I,CN(JC)) = C1(K,I,CN(JC)) - REMOVED
+                          HARVEST_EVENT_APPLIED = .TRUE.
+                        END IF
                       END IF
-			        END DO
-                    DO JHA=1,NHF                            
-	                  IF (CN(JC) == NAE .AND. HARVEST_APPLIED == 1) THEN !> sch 29May2025 Set current segment-specific harvesting fraction to zero once applied to all algal state variables
-                        FHA(JHA) = 0.0
-		    	        FHASAV(JHA) = 0.0           !> sch 29May2025 Set saved value to zero too ... as a precaution (might not be necessary)
-!xxx		 		        write (9922, *) JHA, FHA(JHA), FHASAV(JHA)
-				      END IF
-				    END DO
-				    HARVEST_APPLIED = 0             !> sch 24July2025 Reset the harvesting check switch
+                    END DO
                   END IF
-
-                  IF(C1(K,I,CN(JC)) <ALG_MIN) C1(K,I,CN(JC))  = ALG_MIN    !> sch 31AugJan2025. More efficient Low DO - high mortality option. Ensure a nominal standing crop of algae (ALG_MIN) is maintained.
-
-                END IF				
-!> sch 31Aug2025. End algal harvesting option and the check for minimum algae 
+                  IF (C1(K,I,CN(JC)) < ALG_MIN) C1(K,I,CN(JC)) = ALG_MIN  ! Low DO - high mortality option: maintain minimum algae
+                END IF
+!> End algal harvesting and minimum algae check
 
                 CSSB(K,I,CN(JC)) = 0.0D0
                 C1S(K,I,CN(JC))  = C1(K,I,CN(JC))
                 C2(K,I,CN(JC))   = DMAX1(C1(K,I,CN(JC)),0.0D0)
- 
-!                DO J=1,NAL                                               !> sch 25Jan2025. Low DO - high mortality option. Loop through the algal state variables.
-!                  IF(ALG(K,I,J)<ALG_MIN) ALG(K,I,J) = ALG_MIN            !> sch 25Jan2025. Low DO - high mortality option. Ensure a nominal standing crop of algae (ALG_MIN) is maintained.
-!                END DO                                                   !> sch 25Jan2025. Low DO - high mortality option. End loop through the algal state variables.
-				
+
              END DO
             END DO
           END DO
         END DO
       END DO
+!>    H-01: Zero FHA after all spatial loops so all segments are processed before reset.
+!>    H-03: Write harvest mass output and update cumulative totals.
+      IF (HARVEST_EVENT_APPLIED) THEN
+        DO JHA=1,NHF
+          HAMASS_CUM(JHA) = HAMASS_CUM(JHA) + HAMASS_EVENT(JHA)
+          IF (HAMASS_EVENT(JHA) > 0.0D0) THEN
+            WRITE (9923,'(F12.4,",",I6,",",F8.4,",",ES14.6,",",ES14.6)') JDAY, IHA(JHA), FHA(JHA), &
+              HAMASS_EVENT(JHA) * 1.0D-3, HAMASS_CUM(JHA) * 1.0D-3                                    ! Output in kg
+          END IF
+          FHA(JHA)    = 0.0
+          FHASAV(JHA) = 0.0
+        END DO
+      END IF
     END IF
 
     !DO JW = 1,NWB

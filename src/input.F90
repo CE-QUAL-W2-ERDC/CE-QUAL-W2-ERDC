@@ -11,6 +11,7 @@ USE GLOBAL; USE NAMESC; USE GEOMC;  USE LOGICC; USE PREC;  USE SURFHE;  USE KINE
   
   real    ::  sum ! enhanced pH buffering
   INTEGER :: NPROC,NNDC, N, NSTT, NIDUM, NDUM, JJ,NEPTT,NZPTT,NALT,NMCTT                                                         ! SW 7/13/09   9/28/2018
+  INTEGER :: HAIOS                                                                                                               !> H-02: IOSTAT for optional harvest depth read
   CHARACTER*1 CHAR1
   CHARACTER*8 AID
   CHARACTER(8):: CDUM
@@ -427,6 +428,8 @@ END IF
   ALLOCATE (ETPU(NPU),   EBPU(NPU),   KTPU(NPU),   KBPU(NPU),   JWUPU(NPU),  JWDPU(NPU),  JBUPU(NPU),  JBDPU(NPU), PUMPON(NPU),PUMP_DOWNSTREAM(NPU))
   ALLOCATE (IWD(NWDT),   KWD(NWDT),   QWD(NWDT),   EWD(NWDT),   KTW(NWDT),   KBW(NWDT), QWDSAV(NWDT))
   ALLOCATE (JBHA(IMX),   FHA(IMX),    FHASAV(IMX))  !> sch 30Aug2025. Currently not using INTERP_HARVESTING(IMX). Algal harvesting option. Use IMX, since neeed to allocate before the segment count for harvesting is read.
+  ALLOCATE (HADEP(IMX))                              !> H-02: Maximum harvest depth per segment.
+  ALLOCATE (HAMASS_EVENT(IMX), HAMASS_CUM(IMX))       !> H-03: Per-event and cumulative harvested mass per segment.
   ALLOCATE (ITR(NTRT),   QTRFN(NTR),  TTRFN(NTR),  CTRFN(NTR),  ELTRT(NTRT), ELTRB(NTRT), TRC(NTRT),   JBTR(NTRT), QTRF(KMX,NTRT))
   ALLOCATE (TTLB(IMX),   TTRB(IMX),   CLLB(IMX),   CLRB(IMX))
   ALLOCATE (SRLB1(IMX),  SRRB1(IMX),  SRLB2(IMX),  SRRB2(IMX),  SRFJD1(IMX), SHADEI(IMX), SRFJD2(IMX))
@@ -2349,8 +2352,14 @@ ENDIF
     READ (NUNIT, *) NHF                                                !> Read number of segments with time-varying harvesting inputs.
     READ (NUNIT, *)                                                    !> Skip descriptive line
     READ (NUNIT, *) (IHA(I), I=1,NHF)                                  !> Read list of segments with time-varying harvesting inputs.
-  !  READ (NUNIT, *)                                                   !> sch 30Aug2025. Currently not used. Skip descriptive line
-  !  READ (NUNIT, *) (HAIC(I), I=1,NHF)                                !> sch 30Aug2025. Currently not used. No longer applicable ... Read interpolation option for each segment with time-varying harvesting inputs.
+!>  H-02: Read optional maximum harvest depth per segment. If line is missing, default to 0 (harvest all layers).
+    READ (NUNIT, *, IOSTAT=HAIOS)                                      !> Skip descriptive line
+    IF (HAIOS == 0) THEN
+      READ (NUNIT, *, IOSTAT=HAIOS) (HADEP(I), I=1,NHF)               !> Read max harvest depth (m) per segment. 0 = all layers.
+      IF (HAIOS /= 0) HADEP(1:NHF) = 0.0D0                            !> Default to all layers if read fails.
+    ELSE
+      HADEP(1:NHF) = 0.0D0                                             !> Default to all layers if line is missing.
+    END IF
     CLOSE(NUNIT)
   ENDIF
 !> sch 28Jan2025. End algal harvesting option input reading.

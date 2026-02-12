@@ -42,7 +42,8 @@ SUBROUTINE TIME_VARYING_DATA
   LOGICAL                                :: TWEF                                         ! systdg - TWE
   REAL(R8), ALLOCATABLE, DIMENSION(:)    :: DO_SAT, N2_SAT, DO_SATJ, N2_SATJ, DO_SATD, N2_SATD, DO_SATP, N2_SATP                  ! systdg - DO_SATJ, N2_SATJ, DO_SATD, N2_SATD, DO_SATP, N2_SATP 
   INTEGER                                :: NPT,J,JT,JAC,JS,K,JG,JWD
-  INTEGER                                :: HAF, JHA                     !> sch 29Jan2025. Algal harvesting option variables.              
+  INTEGER                                :: HAF, JHA                     !> sch 29Jan2025. Algal harvesting option variables.
+  INTEGER                                :: HAIOS                        !> H-04: IOSTAT for harvest time-series reads.
   INTEGER, ALLOCATABLE, DIMENSION(:)     :: TRQ,    TRT,    TRC,    INQ,    DTQ,    PRE,    UHE,    DHE,    INFT,   DTT,PUMPD, JJS, ATMDEP, FGASSP, FGASGT, JJG
   INTEGER, ALLOCATABLE, DIMENSION(:)     :: PRT,    UHT,    DHT,    INC,    DTC,    PRC,    UHC,    DHC,    OTQ,    MET,    EXT, ODYNS
   LOGICAL, ALLOCATABLE, DIMENSION(:)     :: INFLOW_CONST, TRIB_CONST, DTRIB_CONST, PRECIP_CONST,OTQF, TRCF, DTCF, INCF, PRCF, METF,DYNEF, TRQF, TRTF, DTTF, DTQF, INQF, INTF, PRQF, PRTF,EXTF,DYNPUMPF
@@ -483,11 +484,15 @@ SUBROUTINE TIME_VARYING_DATA
       FHA(JHA)  = FHANX(JHA)
       FHAO(JHA) = FHANX(JHA)
     END DO
-    READ (HAF,*) NXFHA1,(FHANX(JHA),JHA=1,NHF)                         !> Algal harvesting option. JDAY for next removal, segment-specific fractions of algae removed. sch 29Jan2025. 
+    READ (HAF,*, IOSTAT=HAIOS) NXFHA1,(FHANX(JHA),JHA=1,NHF)           !> H-04: IOSTAT for EOF handling. JDAY for next removal, segment-specific fractions. sch 29Jan2025.
+    IF (HAIOS /= 0) THEN                                               !> H-04: EOF or read error - no more harvest events.
+      NXFHA1 = 1.0E10
+      FHANX(1:NHF) = 0.0D0
+    END IF
 !xxx    write (9922,*) NXFHA1,(FHANX(JHA),JHA=1,NHF)
-    FHASAV(1:NHF) = FHA(1:NHF)                                         !> Algal harvesting option. Save FHA for later use. sch 29Jan2025. 
+    FHASAV(1:NHF) = FHA(1:NHF)                                         !> Algal harvesting option. Save FHA for later use. sch 29Jan2025.
   END IF
-!> sch 30Aug2025. End reading algal harvesting option inputs. 
+!> sch 30Aug2025. End reading algal harvesting option inputs.
   
 IF (TRIBUTARIES) THEN
     DO JT=1,NTR
@@ -1703,7 +1708,7 @@ ENTRY READ_INPUT_DATA (NXTVD)
     NXTVD = MIN(NXTVD,NXQWD1)
   END IF
   
-!> sch 30Aug2025. Start algal harvesting option. If algal harvesting option active (NHF>0 as read in 1st input file), then read the segment-specific reduction inputs. 
+!> sch 30Aug2025. Start algal harvesting option. If algal harvesting option active (NHF>0 as read in 1st input file), then read the segment-specific reduction inputs.
   IF (NHF > 0) THEN
     DO WHILE (JDAY >= NXFHA1)
       NXFHA2 = NXFHA1
@@ -1711,9 +1716,14 @@ ENTRY READ_INPUT_DATA (NXTVD)
         FHA(JHA)  = FHANX(JHA)
         FHAO(JHA) = FHANX(JHA)
       END DO
-      READ (HAF,*) NXFHA1,(FHANX(JHA),JHA=1,NHF)  
+      READ (HAF,*, IOSTAT=HAIOS) NXFHA1,(FHANX(JHA),JHA=1,NHF)        !> H-04: IOSTAT for EOF handling.
+      IF (HAIOS /= 0) THEN                                             !> H-04: EOF or read error - no more harvest events.
+        NXFHA1 = 1.0E10
+        FHANX(1:NHF) = 0.0D0
+        EXIT                                                           !> Exit DO WHILE loop since no more data.
+      END IF
 !xxx      write (9922,*) NXFHA1,(FHANX(JHA),JHA=1,NHF)
-    FHASAV(1:NHF) = FHA(1:NHF)                                                          
+      FHASAV(1:NHF) = FHA(1:NHF)
     END DO
     NXTVD = MIN(NXTVD,NXFHA1)
   END IF
