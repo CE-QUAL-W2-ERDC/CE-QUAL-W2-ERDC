@@ -1,0 +1,9 @@
+Algal Harvesting Option Input File
+Filename for time-varying harvesting data
+harvest_timeseries.csv
+Number of segments with harvesting (NHF)
+2
+Segment numbers where harvesting occurs (IHA). One value per harvested segment (NHF).
+15, 22
+Maximum harvest depth per segment in meters. 0 = harvest all layers. One value per harvested segment (NHF). This line and the next are optional.
+3.0, 0.0

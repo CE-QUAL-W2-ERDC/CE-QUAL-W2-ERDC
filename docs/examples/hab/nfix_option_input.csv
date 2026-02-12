@@ -1,0 +1,3 @@
+Nitrogen Fixation Option Input File
+CRIT_TIN - Critical TIN (NH4+NO3) concentration per algal group (mg/L). One value per algal group (NAL). Set to 0.0 for groups that do not fix nitrogen.
+0.0, 0.0, 0.05

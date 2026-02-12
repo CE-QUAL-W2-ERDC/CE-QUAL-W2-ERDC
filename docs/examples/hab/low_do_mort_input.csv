@@ -1,0 +1,7 @@
+Low DO - High Mortality and Minimum Algae Option Input File
+ALG_O2LIM (mg/L) - DO threshold,  ALG_MIN (mg/L) - minimum algae seed concentration
+2.0, 0.01
+CRIT_T - Critical low-DO duration per algal group (days). One value per algal group (NAL).
+5.0, 3.0, 7.0
+AM_LOW_DO - Elevated mortality rate per algal group (1/day). One value per algal group (NAL).
+0.5, 0.8, 0.3
