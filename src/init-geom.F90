@@ -218,6 +218,14 @@ USE GLOBAL;USE NAMESC; USE GEOMC;  USE LOGICC; USE PREC;  USE SURFHE;  USE KINET
           IF (IWD(JWD) >= US(JB) .AND. IWD(JWD) <= DS(JB)) JBWD(JWD) = JB
         END DO
       END IF
+!> sch 29Jan2025. Start algal harvesting option. Branch list corresponding to algal harvesting segments. Code needed for matching harvested segment list in calculations.
+      IF (HARVESTING) THEN
+        DO JHA=1,NHF
+          IF (IHA(JHA) >= US(JB) .AND. IHA(JHA) <= DS(JB)) JBHA(JHA) = JB
+        END DO
+      END IF
+!> sch 29Jan2025. End algal harvesting option.
+
       IF (UH_INTERNAL(JB)) THEN
         DO JJB=1,NBR
           JBUH(JB) = JJB
