@@ -452,8 +452,6 @@ ENDIF
   
 !  deallocate(isegvol,cdo,cpo4,cno3,cnh4,cchla,ctotp,cdos,cpo4s,cno3s,cnh4s,cchlas,ctotps,cgamma,ssedd,fishname,fishtempl,fishtemph,fishdo,habvol,phabvol,habvolbr,habvolwb,phabvolbr,phabvolwb,voltotbr,voltotwb)  
 
-!xxx  CLOSE(9922)   !< sch 31Aug2025. Close file used for harvesting variable debugging checks.
-  
   RETURN
   
   END SUBROUTINE ENDSIMULATION

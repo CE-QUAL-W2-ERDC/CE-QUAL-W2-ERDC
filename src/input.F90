@@ -2342,7 +2342,6 @@ ENDIF
   HARVEST_OPTION_EXIST = .FALSE.
   NHF = 0                                                              !> Initialize NHF to make sure no impact if the input file doesn't exist.
   INQUIRE(FILE='harvest_option_input.csv',EXIST=HARVEST_OPTION_EXIST)  !> Assume input file is .csv type (add .npt option later if needed).
-!xxx  IF(HARVEST_OPTION_EXIST) write (9922,*) "Harvesting option file exists."
   IF(HARVEST_OPTION_EXIST) THEN
     OPEN(NUNIT,file='harvest_option_input.csv',status='old')
     READ (NUNIT, *)                                                    !> Skip header line

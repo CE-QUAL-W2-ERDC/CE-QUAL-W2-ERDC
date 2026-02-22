@@ -474,22 +474,20 @@ SUBROUTINE TIME_VARYING_DATA
     
 !> sch 30Aug2025. Start algal harvesting option. Algal harvesting time-series inputs. Employing the file structure used for segment withdrawal inputs. 
   IF (NHF > 0) THEN
-!xxx    write (9922, *) "NHF = ", NHF, "Harvest time series file =", HAFFN
     HAF = NPT; NPT = NPT+1
     OPEN (HAF,FILE=HAFFN,STATUS='OLD')
     READ (HAF,'(/)')
-    READ (HAF,*) NXFHA2,(FHANX(JHA),JHA=1,NHF)                         !> Algal harvesting option. JDAY for removal, segment-specific fractions of algae removed. sch 29Jan2025. 
-!xxx    write (9922,*) NXFHA2,(FHANX(JHA),JHA=1,NHF)
-    DO JHA = 1,NHF 
-      FHA(JHA)  = FHANX(JHA)
-      FHAO(JHA) = FHANX(JHA)
+    READ (HAF,*) NXFHA2,(FHANX(JHA),JHA=1,NHF)                         !> Algal harvesting option. JDAY for removal, segment-specific fractions of algae removed. sch 29Jan2025.
+    DO JHA = 1,NHF
+      FHANX(JHA) = MAX(0.0D0, MIN(1.0D0, FHANX(JHA)))                  !> Clamp to [0,1] per ERDC review
+      FHA(JHA)   = FHANX(JHA)
+      FHAO(JHA)  = FHANX(JHA)
     END DO
     READ (HAF,*, IOSTAT=HAIOS) NXFHA1,(FHANX(JHA),JHA=1,NHF)           !> H-04: IOSTAT for EOF handling. JDAY for next removal, segment-specific fractions. sch 29Jan2025.
     IF (HAIOS /= 0) THEN                                               !> H-04: EOF or read error - no more harvest events.
       NXFHA1 = 1.0E10
       FHANX(1:NHF) = 0.0D0
     END IF
-!xxx    write (9922,*) NXFHA1,(FHANX(JHA),JHA=1,NHF)
     FHASAV(1:NHF) = FHA(1:NHF)                                         !> Algal harvesting option. Save FHA for later use. sch 29Jan2025.
   END IF
 !> sch 30Aug2025. End reading algal harvesting option inputs.
@@ -1713,8 +1711,9 @@ ENTRY READ_INPUT_DATA (NXTVD)
     DO WHILE (JDAY >= NXFHA1)
       NXFHA2 = NXFHA1
       DO JHA=1,NHF
-        FHA(JHA)  = FHANX(JHA)
-        FHAO(JHA) = FHANX(JHA)
+        FHANX(JHA) = MAX(0.0D0, MIN(1.0D0, FHANX(JHA)))               !> Clamp to [0,1] per ERDC review
+        FHA(JHA)   = FHANX(JHA)
+        FHAO(JHA)  = FHANX(JHA)
       END DO
       READ (HAF,*, IOSTAT=HAIOS) NXFHA1,(FHANX(JHA),JHA=1,NHF)        !> H-04: IOSTAT for EOF handling.
       IF (HAIOS /= 0) THEN                                             !> H-04: EOF or read error - no more harvest events.
@@ -1722,7 +1721,6 @@ ENTRY READ_INPUT_DATA (NXTVD)
         FHANX(1:NHF) = 0.0D0
         EXIT                                                           !> Exit DO WHILE loop since no more data.
       END IF
-!xxx      write (9922,*) NXFHA1,(FHANX(JHA),JHA=1,NHF)
       FHASAV(1:NHF) = FHA(1:NHF)
     END DO
     NXTVD = MIN(NXTVD,NXFHA1)
