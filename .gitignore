@@ -40,5 +40,8 @@
 # debug information files
 *.dwo
 
+# Test binaries
+tests/hab/run_hab_tests
+
 # MacOS
 .DS_Store
