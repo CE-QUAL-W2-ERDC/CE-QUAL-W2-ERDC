@@ -1,0 +1,215 @@
+#******************************************************************************
+# CE-QUAL-W2 Makefile for gfortran on Windows
+#
+# This Makefile compiles the CE-QUAL-W2 model using gfortran (MinGW-w64)
+# on Windows without requiring MSYS2. Use with mingw32-make.
+#
+# Usage:
+#   mingw32-make -f Makefile.win           - Build the executable
+#   mingw32-make -f Makefile.win clean     - Remove object files and modules
+#   mingw32-make -f Makefile.win distclean - Remove all generated files
+#   mingw32-make -f Makefile.win help      - Show available targets
+#
+# Prerequisites:
+#   - gfortran (MinGW-w64 distribution, e.g., WinLibs or standalone installer)
+#   - mingw32-make (included with MinGW-w64 distributions)
+#   - Add MinGW-w64 bin directory to PATH
+#
+# Created: February 2026
+#******************************************************************************
+
+# Compiler and flags
+FC = gfortran
+PROGRAM = ce-qual-w2.exe
+
+# Use cmd.exe as shell (Windows native)
+SHELL = cmd.exe
+
+# Compiler flags (identical to Unix version)
+FFLAGS = -O2 \
+         -ffree-form \
+         -ffree-line-length-none \
+         -fbacktrace \
+         -fall-intrinsics \
+         -fno-align-commons \
+         -cpp \
+         -fdefault-real-8 \
+         -fdefault-double-8 \
+         -fmax-stack-var-size=0
+
+# Optional flags for debugging (uncomment as needed)
+DEBUG_FLAGS = -g -finit-local-zero -fcheck=all -fcheck=bounds
+FFLAGS += $(DEBUG_FLAGS)
+
+# Optional OpenMP support (currently not used)
+# FFLAGS += -fopenmp
+
+#******************************************************************************
+# Source files - ORDER MATTERS due to module dependencies
+#******************************************************************************
+
+# Module definition file (MUST be compiled first)
+MODULE_SRC = w2modules.F90
+
+# Object files listed explicitly (avoids issues with spaces in filenames)
+MODULE_OBJ = w2modules.o
+
+SUBROUTINE_OBJS = \
+	preprocessor_definitions.o \
+	date.o \
+	density.o \
+	systdg.o \
+	tdg.o \
+	TDGtarget.o \
+	MetFileRegion.o \
+	ReduceReaerAlgae.o \
+	Plunge_Point.o \
+	shading.o \
+	gas-transfer.o \
+	heat-exchange.o \
+	macrophyte-aux.o \
+	aerate.o \
+	envir_perf.o \
+	fishhabitat.o \
+	particle.o \
+	az.o \
+	"Diagenesis Input Files Read 01.o" \
+	"Diagenesis Input 02.o" \
+	"Diagenesis FFT Layer 01.o" \
+	"Diagenesis Sediment Flux Model 05.o" \
+	"Diagenesis Sediment Model 03.o" \
+	"Diagenesis Bubbles Code 01.o" \
+	"Diagenesis Output 02.o" \
+	wqconstituents.o \
+	water-quality.o \
+	transport.o \
+	temperature.o \
+	gate-spill-pipe.o \
+	withdrawal.o \
+	waterbody.o \
+	init-u-elws.o \
+	init-geom.o \
+	init-cond.o \
+	hydroinout.o \
+	time-varying-data.o \
+	layeraddsub.o \
+	balances.o \
+	update.o \
+	restart.o \
+	output.o \
+	outputa2w2tools.o \
+	outputinitw2tools.o \
+	endsimulation.o \
+	init.o \
+	input.o \
+	screen_output_unix.o \
+	status_output.o \
+	unix_stubs.o
+
+MAIN_OBJ = w2_4_unix.o
+
+ALL_OBJS = $(MODULE_OBJ) $(SUBROUTINE_OBJS) $(MAIN_OBJ)
+
+# Dependency rules (ensures modules are compiled before files that use them)
+$(SUBROUTINE_OBJS): $(MODULE_OBJ)
+$(MAIN_OBJ): $(MODULE_OBJ) $(SUBROUTINE_OBJS)
+
+#******************************************************************************
+# Targets
+#******************************************************************************
+
+# Default target
+all: $(PROGRAM)
+
+# Link all object files to create executable
+$(PROGRAM): $(ALL_OBJS)
+	@echo ==================================================
+	@echo Linking $(PROGRAM)...
+	@echo ==================================================
+	$(FC) $(FFLAGS) -o $@ $(ALL_OBJS)
+	@echo.
+	@echo Build successful! Executable: $(PROGRAM)
+	@echo.
+
+# Compile module file first (creates .mod files needed by other sources)
+$(MODULE_OBJ): $(MODULE_SRC)
+	@echo Compiling modules: $(MODULE_SRC)
+	$(FC) $(FFLAGS) -c $(MODULE_SRC)
+
+# Pattern rules for compiling source files
+%.o: %.f90
+	@echo Compiling: $<
+	$(FC) $(FFLAGS) -c $<
+
+%.o: %.F90
+	@echo Compiling (preprocessed): $<
+	$(FC) $(FFLAGS) -c $<
+
+%.o: %.fpp
+	@echo Compiling (preprocessed): $<
+	$(FC) $(FFLAGS) -c $<
+
+# Special handling for files with spaces in names
+"Diagenesis Input Files Read 01.o": "Diagenesis Input Files Read 01.f90"
+	@echo Compiling: Diagenesis Input Files Read 01.f90
+	$(FC) $(FFLAGS) -c "Diagenesis Input Files Read 01.f90"
+
+"Diagenesis Input 02.o": "Diagenesis Input 02.f90"
+	@echo Compiling: Diagenesis Input 02.f90
+	$(FC) $(FFLAGS) -c "Diagenesis Input 02.f90"
+
+"Diagenesis FFT Layer 01.o": "Diagenesis FFT Layer 01.f90"
+	@echo Compiling: Diagenesis FFT Layer 01.f90
+	$(FC) $(FFLAGS) -c "Diagenesis FFT Layer 01.f90"
+
+"Diagenesis Sediment Model 03.o": "Diagenesis Sediment Model 03.f90"
+	@echo Compiling: Diagenesis Sediment Model 03.f90
+	$(FC) $(FFLAGS) -c "Diagenesis Sediment Model 03.f90"
+
+"Diagenesis Sediment Flux Model 05.o": "Diagenesis Sediment Flux Model 05.f90"
+	@echo Compiling: Diagenesis Sediment Flux Model 05.f90
+	$(FC) $(FFLAGS) -c "Diagenesis Sediment Flux Model 05.f90"
+
+"Diagenesis Bubbles Code 01.o": "Diagenesis Bubbles Code 01.f90"
+	@echo Compiling: Diagenesis Bubbles Code 01.f90
+	$(FC) $(FFLAGS) -c "Diagenesis Bubbles Code 01.f90"
+
+"Diagenesis Output 02.o": "Diagenesis Output 02.f90"
+	@echo Compiling: Diagenesis Output 02.f90
+	$(FC) $(FFLAGS) -c "Diagenesis Output 02.f90"
+
+#******************************************************************************
+# Clean targets (Windows native commands)
+#******************************************************************************
+
+clean:
+	@echo Cleaning object files and modules...
+	-del /q *.o 2>nul
+	-del /q *.mod 2>nul
+	-del /q *.smod 2>nul
+	@echo Clean complete.
+
+distclean: clean
+	@echo Removing executable and backup files...
+	-del /q $(PROGRAM) 2>nul
+	-del /q *.dwf 2>nul
+	-del /q *.pdb 2>nul
+	@echo Distclean complete.
+
+#******************************************************************************
+# Help target
+#******************************************************************************
+
+help:
+	@echo CE-QUAL-W2 Makefile for gfortran on Windows
+	@echo.
+	@echo Available targets:
+	@echo   mingw32-make -f Makefile.win           - Build the CE-QUAL-W2 executable
+	@echo   mingw32-make -f Makefile.win clean     - Remove object files and modules
+	@echo   mingw32-make -f Makefile.win distclean - Remove all generated files
+	@echo   mingw32-make -f Makefile.win help      - Show this help message
+	@echo.
+	@echo Compiler: $(FC)
+	@echo.
+
+.PHONY: all clean distclean help

@@ -25,7 +25,7 @@ read(FISHHABFN,*)
 read(FISHHABFN,*)
 read(FISHHABFN,*)ifish,conhab,DOVOL
 conhab=TRIM(ADJUSTL(conhab))        !ZZ write fish_habitat output files into a folder specified here.
-X = SCAN(conhab,'\',BACK=.TRUE.)      
+X = MAX(SCAN(conhab,'/',BACK=.TRUE.), SCAN(conhab,'\',BACK=.TRUE.))      
 allocate (fishname(ifish),fishtempl(ifish),fishtemph(ifish),fishdo(ifish),habvol(ifish),phabvol(ifish),habvolbr(nbr,ifish),habvolwb(nwb,ifish),phabvolbr(nbr,ifish),phabvolwb(nwb,ifish),voltotbr(nbr),voltotwb(nwb))
 read(FISHHABFN,*)
 do i=1,ifish

@@ -57,6 +57,19 @@ MODULE MSCLIB
   ! RESOURCE.FD include removed - Windows resource file not needed
   ! BEGINTHREADEX/ENDTHREADEX interfaces removed - Windows threading not used
 END MODULE MSCLIB
+MODULE PLATFORM
+  ! Cross-platform support
+  ! _WIN32 is defined by MinGW gfortran's C preprocessor on Windows
+#ifdef _WIN32
+  CHARACTER(1), PARAMETER :: PATH_SEP = ACHAR(92)   ! backslash (ACHAR avoids cpp escape issues)
+  CHARACTER(4), PARAMETER :: COPY_CMD = 'COPY'
+  CHARACTER(5), PARAMETER :: MKDIR_CMD = 'mkdir'
+#else
+  CHARACTER(1), PARAMETER :: PATH_SEP = '/'
+  CHARACTER(2), PARAMETER :: COPY_CMD = 'cp'
+  CHARACTER(8), PARAMETER :: MKDIR_CMD = 'mkdir -p'
+#endif
+END MODULE PLATFORM
 MODULE PREC
   INTEGER, PARAMETER :: I2=SELECTED_INT_KIND (3)
   INTEGER, PARAMETER :: R8=SELECTED_REAL_KIND(15)

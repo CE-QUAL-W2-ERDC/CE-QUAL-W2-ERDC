@@ -3,7 +3,7 @@
   ! Updated 9/2020, 11/2023
   !===========================================================================================================================
   Subroutine CEMA_W2_Input
-    Use MAIN 
+    Use MAIN
     Use GLOBAL
     Use KINETIC
     Use GEOMC
@@ -418,6 +418,7 @@
   SUBROUTINE INIT_CEMA
     USE CEMAVars; USE MAIN; USE GLOBAL, ONLY:DAY,DLT,IMX, WRN,W2ERR; Use GEOMC             !,MODDIR
     Use SCREENC, ONLY: JDAY  ! USE IFPORT removed for gfortran compatibility
+    Use PLATFORM
     IMPLICIT NONE
     CHARACTER(60) :: ADUMMY   ! SW 2/2019
     CHARACTER (255) :: C_DIRSPEC
@@ -509,9 +510,9 @@
     
         IF (SedFlxFolder /= ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) <= 0) THEN   ! check if directory exists - create directory if necessary
             ! Use EXECUTE_COMMAND_LINE for gfortran compatibility (replaces MAKEDIRQQ and INQUIRE DIRECTORY=)
-            ! mkdir -p creates directory if it doesn't exist, succeeds silently if it does
+            ! MKDIR_CMD creates directory if it doesn't exist (mkdir -p on Unix, mkdir on Windows)
             WRITE(WRN,'(A,A)')'Creating/verifying directory for sediment diagenesis files. Directory:',TRIM(SEDFLXFOLDER)
-            CALL EXECUTE_COMMAND_LINE('mkdir -p "'//TRIM(ADJUSTL(SedFlxFolder))//'"', EXITSTAT=ExitStat)
+            CALL EXECUTE_COMMAND_LINE(TRIM(MKDIR_CMD)//' "'//TRIM(ADJUSTL(SedFlxFolder))//'"', EXITSTAT=ExitStat)
             STATUS = (ExitStat == 0)  ! Convert exit status to logical (0=success)
 
             IF (status) THEN
@@ -529,7 +530,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN4, File = "Diagenesis_SOD.csv", POSITION='APPEND') 
                     ELSE
-                      Open(CEMASedFlxFilN4, File = trim(SedFlxFolder)//'\Diagenesis_SOD.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN4, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SOD.csv', POSITION='APPEND')
                     END IF                    
                     JDAY1=0.0
                     REWIND (CEMASedFlxFilN4)  
@@ -542,7 +543,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN5, File = "Diagenesis_POCG1.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN5, File = trim(SedFlxFolder)//'\Diagenesis_POCG1.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN5, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_POCG1.csv', POSITION='APPEND')
                     END IF                     
                     REWIND (CEMASedFlxFilN5)  
                     READ   (CEMASedFlxFilN5,'(/)',END=102)  
@@ -554,7 +555,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN6, File = "Diagenesis_POCG2.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN6, File = trim(SedFlxFolder)//'\Diagenesis_POCG2.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN6, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_POCG2.csv', POSITION='APPEND')
                     END IF                    
                     REWIND (CEMASedFlxFilN6)  
                     READ   (CEMASedFlxFilN6,'(/)',END=103)  
@@ -566,7 +567,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN
                     Open(CEMASedFlxFilN7, File = 'Diagenesis_JC.csv', POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN7, File = trim(SedFlxFolder)//'\Diagenesis_JC.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN7, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_JC.csv', POSITION='APPEND')
                     END IF
                     REWIND (CEMASedFlxFilN7)  
                     READ   (CEMASedFlxFilN7,'(/)',END=104)  
@@ -578,7 +579,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN8, File = "Diagenesis_JN.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN8, File = trim(SedFlxFolder)//'\Diagenesis_JN.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN8, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_JN.csv', POSITION='APPEND')
                     END IF                     
                     REWIND (CEMASedFlxFilN8)  
                     READ   (CEMASedFlxFilN8,'(/)',END=105)  
@@ -590,7 +591,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN9, File = "Diagenesis_PONG1.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN9, File = trim(SedFlxFolder)//'\Diagenesis_PONG1.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN9, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_PONG1.csv', POSITION='APPEND')
                     END IF                    
                     REWIND (CEMASedFlxFilN9)  
                     READ   (CEMASedFlxFilN9,'(/)',END=106)  
@@ -602,7 +603,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN10, File = "Diagenesis_PONG2.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN10, File = trim(SedFlxFolder)//'\Diagenesis_PONG2.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN10, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_PONG2.csv', POSITION='APPEND')
                     END IF                                
                     REWIND (CEMASedFlxFilN10)  
                     READ   (CEMASedFlxFilN10,'(/)',END=107)  
@@ -614,7 +615,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN  
                     Open(CEMASedFlxFilN11, File = 'Diagenesis_SD_JCH4.csv', POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN11, File = trim(SedFlxFolder)//'\Diagenesis_SD_JCH4.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN11, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SD_JCH4.csv', POSITION='APPEND')
                     END IF
                     REWIND (CEMASedFlxFilN11)  
                     READ   (CEMASedFlxFilN11,'(/)',END=108)  
@@ -626,7 +627,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN12, File = "Diagenesis_SD_JNH4.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN12, File = trim(SedFlxFolder)//'\Diagenesis_SD_JNH4.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN12, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SD_JNH4.csv', POSITION='APPEND')
                     END IF                       
                     REWIND (CEMASedFlxFilN12)  
                     READ   (CEMASedFlxFilN12,'(/)',END=109)  
@@ -638,7 +639,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN13, File = "Diagenesis_SD_JNO3.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN13, File = trim(SedFlxFolder)//'\Diagenesis_SD_JNO3.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN13, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SD_JNO3.csv', POSITION='APPEND')
                     END IF                     
                     REWIND (CEMASedFlxFilN13)  
                     READ   (CEMASedFlxFilN13,'(/)',END=110)  
@@ -650,7 +651,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN14, File = "Diagenesis_SD_JPO4.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN14, File = trim(SedFlxFolder)//'\Diagenesis_SD_JPO4.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN14, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SD_JPO4.csv', POSITION='APPEND')
                     END IF                    
                     REWIND (CEMASedFlxFilN14)  
                     READ   (CEMASedFlxFilN14,'(/)',END=111)  
@@ -662,7 +663,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN15, File = "Diagenesis_POPG1.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN15, File = trim(SedFlxFolder)//'\Diagenesis_POPG1.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN15, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_POPG1.csv', POSITION='APPEND')
                     END IF                    
                     REWIND (CEMASedFlxFilN15)  
                     READ   (CEMASedFlxFilN15,'(/)',END=112)  
@@ -674,7 +675,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN16, File = "Diagenesis_POPG2.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN16, File = trim(SedFlxFolder)//'\Diagenesis_POPG2.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN16, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_POPG2.csv', POSITION='APPEND')
                     END IF                    
                     REWIND (CEMASedFlxFilN16)  
                     READ   (CEMASedFlxFilN16,'(/)',END=113)  
@@ -686,7 +687,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN17, File = "Diagenesis_CSOD.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN17, File = trim(SedFlxFolder)//'\Diagenesis_CSOD.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN17, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_CSOD.csv', POSITION='APPEND')
                     END IF                     
                     REWIND (CEMASedFlxFilN17)  
                     READ   (CEMASedFlxFilN17,'(/)',END=114)  
@@ -698,7 +699,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN 
                       Open(CEMASedFlxFilN18, File = 'Diagenesis_NSOD.csv', POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN18, File = trim(SedFlxFolder)//'\Diagenesis_NSOD.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN18, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_NSOD.csv', POSITION='APPEND')
                     END IF                     
                     REWIND (CEMASedFlxFilN18)  
                     READ   (CEMASedFlxFilN18,'(/)',END=115)  
@@ -710,7 +711,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN19, File = "Diagenesis_JP.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN19, File = trim(SedFlxFolder)//'\Diagenesis_JP.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN19, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_JP.csv', POSITION='APPEND')
                     END IF                       
                     REWIND (CEMASedFlxFilN19)  
                     READ   (CEMASedFlxFilN19,'(/)',END=116)  
@@ -722,7 +723,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN20, File = "Diagenesis_AerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN20, File = trim(SedFlxFolder)//'\Diagenesis_AerobicLayer.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN20, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_AerobicLayer.csv', POSITION='APPEND')
                     END IF                   
                     REWIND (CEMASedFlxFilN20)  
                     READ   (CEMASedFlxFilN20,'(/)',END=117)  
@@ -734,7 +735,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN21, File = "Diagenesis_TemperatureAerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN21, File = trim(SedFlxFolder)//'\Diagenesis_TemperatureAerobicLayer.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN21, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_TemperatureAerobicLayer.csv', POSITION='APPEND')
                     END IF                     
                     REWIND (CEMASedFlxFilN21)  
                     READ   (CEMASedFlxFilN21,'(/)',END=118)  
@@ -746,7 +747,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN22, File = "Diagenesis_TemperatureAnaerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN22, File = trim(SedFlxFolder)//'\Diagenesis_TemperatureAnaerobicLayer.csv', POSITION='APPEND') 
+                      Open(CEMASedFlxFilN22, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_TemperatureAnaerobicLayer.csv', POSITION='APPEND') 
                     END IF                      
                     REWIND (CEMASedFlxFilN22)  
                     READ   (CEMASedFlxFilN22,'(/)',END=119)  
@@ -758,7 +759,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN23, File = "Diagenesis_NO3AerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN23, File = trim(SedFlxFolder)//'\Diagenesis_NO3AerobicLayer.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN23, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_NO3AerobicLayer.csv', POSITION='APPEND')
                     END IF                     
                     REWIND (CEMASedFlxFilN23)  
                     READ   (CEMASedFlxFilN23,'(/)',END=120)  
@@ -770,7 +771,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN24, File = "Diagenesis_NO3AnaerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN24, File = trim(SedFlxFolder)//'\Diagenesis_NO3AnaerobicLayer.csv', POSITION='APPEND')  
+                      Open(CEMASedFlxFilN24, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_NO3AnaerobicLayer.csv', POSITION='APPEND')  
                     END IF                    
                     REWIND (CEMASedFlxFilN24)  
                     READ   (CEMASedFlxFilN24,'(/)',END=121)  
@@ -782,7 +783,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN25, File = "Diagenesis_NH3AerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN25, File = trim(SedFlxFolder)//'\Diagenesis_NH3AerobicLayer.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN25, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_NH3AerobicLayer.csv', POSITION='APPEND')
                     END IF                    
                     REWIND (CEMASedFlxFilN25)  
                     READ   (CEMASedFlxFilN25,'(/)',END=122)  
@@ -794,7 +795,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN26, File = "Diagenesis_NH3AnaerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN26, File = trim(SedFlxFolder)//'\Diagenesis_NH3AnaerobicLayer.csv', POSITION='APPEND') 
+                      Open(CEMASedFlxFilN26, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_NH3AnaerobicLayer.csv', POSITION='APPEND') 
                     END IF                      
                     REWIND (CEMASedFlxFilN26)  
                     READ   (CEMASedFlxFilN26,'(/)',END=123)  
@@ -806,7 +807,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN27, File = "Diagenesis_PO4AerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN27, File = trim(SedFlxFolder)//'\Diagenesis_PO4AerobicLayer.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN27, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_PO4AerobicLayer.csv', POSITION='APPEND')
                     END IF                       
                     REWIND (CEMASedFlxFilN27)  
                     READ   (CEMASedFlxFilN27,'(/)',END=124)  
@@ -818,7 +819,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN28, File = "Diagenesis_PO4AnaerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN28, File = trim(SedFlxFolder)//'\Diagenesis_PO4AnaerobicLayer.csv', POSITION='APPEND') 
+                      Open(CEMASedFlxFilN28, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_PO4AnaerobicLayer.csv', POSITION='APPEND') 
                     END IF                      
                     REWIND (CEMASedFlxFilN28)  
                     READ   (CEMASedFlxFilN28,'(/)',END=125)  
@@ -830,7 +831,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN29, File = "Diagenesis_SO4AerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN29, File = trim(SedFlxFolder)//'\Diagenesis_SO4AerobicLayer.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN29, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SO4AerobicLayer.csv', POSITION='APPEND')
                     END IF                    
                     REWIND (CEMASedFlxFilN29)  
                     READ   (CEMASedFlxFilN29,'(/)',END=126)  
@@ -842,7 +843,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN30, File = "Diagenesis_SO4AnaerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN30, File = trim(SedFlxFolder)//'\Diagenesis_SO4AnaerobicLayer.csv', POSITION='APPEND') 
+                      Open(CEMASedFlxFilN30, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SO4AnaerobicLayer.csv', POSITION='APPEND') 
                     END IF                     
                     REWIND (CEMASedFlxFilN30)  
                     READ   (CEMASedFlxFilN30,'(/)',END=127)  
@@ -854,7 +855,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN31, File = "Diagenesis_FeIIAerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN31, File = trim(SedFlxFolder)//'\Diagenesis_FeIIAerobicLayer.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN31, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_FeIIAerobicLayer.csv', POSITION='APPEND')
                     END IF                     
                     REWIND (CEMASedFlxFilN31)  
                     READ   (CEMASedFlxFilN31,'(/)',END=128)  
@@ -866,7 +867,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN32, File = "Diagenesis_FeIIAnaerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN32, File = trim(SedFlxFolder)//'\Diagenesis_FeIIAnaerobicLayer.csv', POSITION='APPEND') 
+                      Open(CEMASedFlxFilN32, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_FeIIAnaerobicLayer.csv', POSITION='APPEND') 
                     END IF                     
                     REWIND (CEMASedFlxFilN32)  
                     READ   (CEMASedFlxFilN32,'(/)',END=129)  
@@ -878,7 +879,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN33, File = "Diagenesis_MnIIAerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN33, File = trim(SedFlxFolder)//'\Diagenesis_MnIIAerobicLayer.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN33, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_MnIIAerobicLayer.csv', POSITION='APPEND')
                     END IF                    
                     REWIND (CEMASedFlxFilN33)  
                     READ   (CEMASedFlxFilN33,'(/)',END=130)  
@@ -890,7 +891,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN34, File = "Diagenesis_MnIIAnaerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN34, File = trim(SedFlxFolder)//'\Diagenesis_MnIIAnaerobicLayer.csv', POSITION='APPEND') 
+                      Open(CEMASedFlxFilN34, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_MnIIAnaerobicLayer.csv', POSITION='APPEND') 
                     END IF                     
                     REWIND (CEMASedFlxFilN34)  
                     READ   (CEMASedFlxFilN34,'(/)',END=131)  
@@ -902,7 +903,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN35, File = "Diagenesis_CH4AerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN35, File = trim(SedFlxFolder)//'\Diagenesis_CH4AerobicLayer.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN35, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_CH4AerobicLayer.csv', POSITION='APPEND')
                     END IF                    
                     REWIND (CEMASedFlxFilN35)  
                     READ   (CEMASedFlxFilN35,'(/)',END=132)  
@@ -914,7 +915,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN36, File = "Diagenesis_CH4AnaerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN36, File = trim(SedFlxFolder)//'\Diagenesis_CH4AnaerobicLayer.csv', POSITION='APPEND') 
+                      Open(CEMASedFlxFilN36, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_CH4AnaerobicLayer.csv', POSITION='APPEND') 
                     END IF                       
                     REWIND (CEMASedFlxFilN36)  
                     READ   (CEMASedFlxFilN36,'(/)',END=133)  
@@ -926,7 +927,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN37, File = "Diagenesis_pHAerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN37, File = trim(SedFlxFolder)//'\Diagenesis_pHAerobicLayer.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN37, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_pHAerobicLayer.csv', POSITION='APPEND')
                     END IF                       
                     REWIND (CEMASedFlxFilN37)  
                     READ   (CEMASedFlxFilN37,'(/)',END=134)  
@@ -938,7 +939,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN38, File = "Diagenesis_pHAnaerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN38, File = trim(SedFlxFolder)//'\Diagenesis_pHAnaerobicLayer.csv', POSITION='APPEND') 
+                      Open(CEMASedFlxFilN38, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_pHAnaerobicLayer.csv', POSITION='APPEND') 
                     END IF                     
                     REWIND (CEMASedFlxFilN38)  
                     READ   (CEMASedFlxFilN38,'(/)',END=135)  
@@ -950,7 +951,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN39, File = "Diagenesis_SulfideAerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN39, File = trim(SedFlxFolder)//'\Diagenesis_SulfideAerobicLayer.csv', POSITION='APPEND')
+                      Open(CEMASedFlxFilN39, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SulfideAerobicLayer.csv', POSITION='APPEND')
                     END IF                    
                     REWIND (CEMASedFlxFilN39)  
                     READ   (CEMASedFlxFilN39,'(/)',END=136)  
@@ -962,7 +963,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN40, File = "Diagenesis_SulfideAnaerobicLayer.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN40, File = trim(SedFlxFolder)//'\Diagenesis_SulfideAnaerobicLayer.csv', POSITION='APPEND') 
+                      Open(CEMASedFlxFilN40, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SulfideAnaerobicLayer.csv', POSITION='APPEND') 
                     END IF                     
                     REWIND (CEMASedFlxFilN40)  
                     READ   (CEMASedFlxFilN40,'(/)',END=137)  
@@ -974,7 +975,7 @@
                     IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
                       Open(CEMASedFlxFilN41, File = "Diagenesis_TransferVelocity.csv", POSITION='APPEND')
                     ELSE
-                      Open(CEMASedFlxFilN41, File = trim(SedFlxFolder)//'\Diagenesis_TransferVelocity.csv', POSITION='APPEND') 
+                      Open(CEMASedFlxFilN41, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_TransferVelocity.csv', POSITION='APPEND') 
                     END IF                     
                     REWIND (CEMASedFlxFilN41)  
                     READ   (CEMASedFlxFilN41,'(/)',END=138)  
@@ -1010,7 +1011,7 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN
           Open(CEMASedFlxFilN4, File = "Diagenesis_SOD.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN4, File = Trim(SedFlxFolder)//'\Diagenesis_SOD.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN4, File = Trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SOD.csv', STATUS='unknown')
         END IF   
         WRITE(CEMASedFlxFilN4,'(A)', ADVANCE='NO') 'Variable,JDAY,'
         DO SegNumI = 1, IMX
@@ -1024,7 +1025,7 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN5, File = "Diagenesis_POCG1.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN5, File = Trim(SedFlxFolder)//'\Diagenesis_POCG1.csv', STATUS='unknown')         
+          Open(CEMASedFlxFilN5, File = Trim(SedFlxFolder)//PATH_SEP//'Diagenesis_POCG1.csv', STATUS='unknown')         
         END IF        
         WRITE(CEMASedFlxFilN5,'(A)', ADVANCE='NO') 'Variable,JDAY,'
         DO SegNumI = 1, IMX
@@ -1038,7 +1039,7 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN6, File = "Diagenesis_POCG2.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN6, File = trim(SedFlxFolder)//'\Diagenesis_POCG2.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN6, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_POCG2.csv', STATUS='unknown')
         END IF     
         WRITE(CEMASedFlxFilN6,'(A)', ADVANCE='NO') 'Variable,JDAY,'
         DO SegNumI = 1, IMX
@@ -1052,7 +1053,7 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN7, File = "Diagenesis_JC.csv", STATUS='unknown')
         ELSE  
-          Open(CEMASedFlxFilN7, File = trim(SedFlxFolder)//'\Diagenesis_JC.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN7, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_JC.csv', STATUS='unknown')
         END IF       
         WRITE(CEMASedFlxFilN7,'(A)', ADVANCE='NO') 'Variable,JDAY,'
         DO SegNumI = 1, IMX
@@ -1066,7 +1067,7 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN8, File = "Diagenesis_JN.csv", STATUS='unknown') 
         ELSE   
-          Open(CEMASedFlxFilN8, File = trim(SedFlxFolder)//'\Diagenesis_JN.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN8, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_JN.csv', STATUS='unknown')
         END IF 
         WRITE(CEMASedFlxFilN8,'(A)', ADVANCE='NO') 'Variable,JDAY,'
         DO SegNumI = 1, IMX
@@ -1080,7 +1081,7 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN9, File = "Diagenesis_PONG1.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN9, File = trim(SedFlxFolder)//'\Diagenesis_PONG1.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN9, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_PONG1.csv', STATUS='unknown')
         END IF
         WRITE(CEMASedFlxFilN9,'(A)', ADVANCE='NO') 'Variable,JDAY,'
         DO SegNumI = 1, IMX
@@ -1094,7 +1095,7 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN10, File = "Diagenesis_PONG2.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN10, File = trim(SedFlxFolder)//'\Diagenesis_PONG2.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN10, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_PONG2.csv', STATUS='unknown')
         END IF    
         WRITE(CEMASedFlxFilN10,'(A)', ADVANCE='NO') 'Variable,JDAY,'
         DO SegNumI = 1, IMX
@@ -1108,7 +1109,7 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN11, File = "Diagenesis_SD_JCH4.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN11, File = trim(SedFlxFolder)//'\Diagenesis_SD_JCH4.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN11, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SD_JCH4.csv', STATUS='unknown')
         END IF  
         WRITE(CEMASedFlxFilN11,'(A)', ADVANCE='NO') 'Variable,JDAY,'
         DO SegNumI = 1, IMX
@@ -1122,7 +1123,7 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN12, File = "Diagenesis_SD_JNH4.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN12, File = trim(SedFlxFolder)//'\Diagenesis_SD_JNH4.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN12, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SD_JNH4.csv', STATUS='unknown')
         END IF   
         WRITE(CEMASedFlxFilN12,'(A)', ADVANCE='NO') 'Variable,JDAY,'
         DO SegNumI = 1, IMX
@@ -1136,7 +1137,7 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN13, File = "Diagenesis_SD_JNO3.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN13, File = trim(SedFlxFolder)//'\Diagenesis_SD_JNO3.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN13, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SD_JNO3.csv', STATUS='unknown')
         END IF 
         WRITE(CEMASedFlxFilN13,'(A)', ADVANCE='NO') 'Variable,JDAY,'
         DO SegNumI = 1, IMX
@@ -1150,7 +1151,7 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
          Open(CEMASedFlxFilN14, File = "Diagenesis_SD_JPO4.csv", STATUS='unknown')
         ELSE
-         Open(CEMASedFlxFilN14, File = trim(SedFlxFolder)//'\Diagenesis_SD_JPO4.csv', STATUS='unknown')
+         Open(CEMASedFlxFilN14, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SD_JPO4.csv', STATUS='unknown')
         END IF
         WRITE(CEMASedFlxFilN14,'(A)', ADVANCE='NO') 'Variable,JDAY,'
         DO SegNumI = 1, IMX
@@ -1164,7 +1165,7 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN15, File = "Diagenesis_POPG1.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN15, File = trim(SedFlxFolder)//'\Diagenesis_POPG1.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN15, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_POPG1.csv', STATUS='unknown')
         END IF
         WRITE(CEMASedFlxFilN15,'(A)', ADVANCE='NO') 'Variable,JDAY,'
         DO SegNumI = 1, IMX
@@ -1178,7 +1179,7 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN16, File = "Diagenesis_POPG2.csv", STATUS='unknown')
         ELSE  
-          Open(CEMASedFlxFilN16, File = trim(SedFlxFolder)//'\Diagenesis_POPG2.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN16, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_POPG2.csv', STATUS='unknown')
         END IF
         WRITE(CEMASedFlxFilN16,'(A)', ADVANCE='NO') 'Variable,JDAY,'
         DO SegNumI = 1, IMX
@@ -1192,7 +1193,7 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN17, File = "Diagenesis_CSOD.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN17, File = trim(SedFlxFolder)//'\Diagenesis_CSOD.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN17, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_CSOD.csv', STATUS='unknown')
         END IF 
         WRITE(CEMASedFlxFilN17,'(A)', ADVANCE='NO') 'Variable,JDAY,'
         DO SegNumI = 1, IMX
@@ -1206,7 +1207,7 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN18, File = "Diagenesis_NSOD.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN18, File = trim(SedFlxFolder)//'\Diagenesis_NSOD.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN18, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_NSOD.csv', STATUS='unknown')
         END IF     
         WRITE(CEMASedFlxFilN18,'(A)', ADVANCE='NO') 'Variable,JDAY,'
         DO SegNumI = 1, IMX
@@ -1220,7 +1221,7 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN19, File = "Diagenesis_JP.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN19, File = trim(SedFlxFolder)//'\Diagenesis_JP.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN19, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_JP.csv', STATUS='unknown')
         END IF     
         WRITE(CEMASedFlxFilN19,'(A)', ADVANCE='NO') 'Variable,JDAY,'
         DO SegNumI = 1, IMX
@@ -1234,7 +1235,7 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN20, File = "Diagenesis_AerobicLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN20, File = trim(SedFlxFolder)//'\Diagenesis_AerobicLayer.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN20, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_AerobicLayer.csv', STATUS='unknown')
         END IF
         WRITE(CEMASedFlxFilN20,'(A)', ADVANCE='NO') 'Variable,JDAY,'
         DO SegNumI = 1, IMX
@@ -1245,161 +1246,161 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN21, File = "Diagenesis_TemperatureAerobicLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN21, File = trim(SedFlxFolder)//'\Diagenesis_TemperatureAerobicLayer.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN21, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_TemperatureAerobicLayer.csv', STATUS='unknown')
         END IF    
         WRITE(CEMASedFlxFilN21,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN21,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN21,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN22, File = "Diagenesis_TemperatureAnaerobicLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN22, File = trim(SedFlxFolder)//'\Diagenesis_TemperatureAnaerobicLayer.csv', STATUS='unknown') 
+          Open(CEMASedFlxFilN22, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_TemperatureAnaerobicLayer.csv', STATUS='unknown') 
         END IF  
         WRITE(CEMASedFlxFilN22,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN22,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN22,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN23, File = "Diagenesis_NO3AerobicLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN23, File = trim(SedFlxFolder)//'\Diagenesis_NO3AerobicLayer.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN23, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_NO3AerobicLayer.csv', STATUS='unknown')
         END IF 
         WRITE(CEMASedFlxFilN23,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN23,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN23,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN24, File = "Diagenesis_NO3AnaerobicLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN24, File = trim(SedFlxFolder)//'\Diagenesis_NO3AnaerobicLayer.csv', STATUS='unknown')  
+          Open(CEMASedFlxFilN24, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_NO3AnaerobicLayer.csv', STATUS='unknown')  
         END IF
         WRITE(CEMASedFlxFilN24,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN24,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN24,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN25, File = "Diagenesis_NH3AerobicLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN25, File = trim(SedFlxFolder)//'\Diagenesis_NH3AerobicLayer.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN25, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_NH3AerobicLayer.csv', STATUS='unknown')
         END IF
         WRITE(CEMASedFlxFilN25,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN25,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN25,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN26, File = "Diagenesis_NH3AnaerobicLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN26, File = trim(SedFlxFolder)//'\Diagenesis_NH3AnaerobicLayer.csv', STATUS='unknown') 
+          Open(CEMASedFlxFilN26, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_NH3AnaerobicLayer.csv', STATUS='unknown') 
         END IF         
         WRITE(CEMASedFlxFilN26,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN26,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN26,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN27, File = "Diagenesis_PO4AerobicLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN27, File = trim(SedFlxFolder)//'\Diagenesis_PO4AerobicLayer.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN27, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_PO4AerobicLayer.csv', STATUS='unknown')
         END IF   
         WRITE(CEMASedFlxFilN27,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN27,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN27,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN28, File = "Diagenesis_PO4AnaerobicLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN28, File = trim(SedFlxFolder)//'\Diagenesis_PO4AnaerobicLayer.csv', STATUS='unknown') 
+          Open(CEMASedFlxFilN28, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_PO4AnaerobicLayer.csv', STATUS='unknown') 
         END IF  
         WRITE(CEMASedFlxFilN28,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN28,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN28,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN29, File = "Diagenesis_SO4AerobicLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN29, File = trim(SedFlxFolder)//'\Diagenesis_SO4AerobicLayer.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN29, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SO4AerobicLayer.csv', STATUS='unknown')
         END IF
         WRITE(CEMASedFlxFilN29,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN29,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN29,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN30, File = "Diagenesis_SO4AnaerobicLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN30, File = trim(SedFlxFolder)//'\Diagenesis_SO4AnaerobicLayer.csv', STATUS='unknown') 
+          Open(CEMASedFlxFilN30, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SO4AnaerobicLayer.csv', STATUS='unknown') 
         END IF 
         WRITE(CEMASedFlxFilN30,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN30,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN30,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
            Open(CEMASedFlxFilN31, File = "Diagenesis_FeIIAerobicLayer.csv", STATUS='unknown')
         ELSE
-           Open(CEMASedFlxFilN31, File = trim(SedFlxFolder)//'\Diagenesis_FeIIAerobicLayer.csv', STATUS='unknown')
+           Open(CEMASedFlxFilN31, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_FeIIAerobicLayer.csv', STATUS='unknown')
         END IF       
         WRITE(CEMASedFlxFilN31,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN31,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN31,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN32, File = "Diagenesis_FeIIAnaerobicLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN32, File = trim(SedFlxFolder)//'\Diagenesis_FeIIAnaerobicLayer.csv', STATUS='unknown') 
+          Open(CEMASedFlxFilN32, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_FeIIAnaerobicLayer.csv', STATUS='unknown') 
         END IF 
         WRITE(CEMASedFlxFilN32,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN32,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN32,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN33, File = "Diagenesis_MnIIAerobicLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN33, File = trim(SedFlxFolder)//'\Diagenesis_MnIIAerobicLayer.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN33, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_MnIIAerobicLayer.csv', STATUS='unknown')
         END IF
         WRITE(CEMASedFlxFilN33,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN33,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN33,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN34, File = "Diagenesis_MnIIAnaerobicLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN34, File = trim(SedFlxFolder)//'\Diagenesis_MnIIAnaerobicLayer.csv', STATUS='unknown') 
+          Open(CEMASedFlxFilN34, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_MnIIAnaerobicLayer.csv', STATUS='unknown') 
         END IF 
         WRITE(CEMASedFlxFilN34,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN34,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN34,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN35, File = "Diagenesis_CH4AerobicLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN35, File = trim(SedFlxFolder)//'\Diagenesis_CH4AerobicLayer.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN35, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_CH4AerobicLayer.csv', STATUS='unknown')
         END IF
         WRITE(CEMASedFlxFilN35,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN35,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN35,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN36, File = "Diagenesis_CH4AnaerobicLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN36, File = trim(SedFlxFolder)//'\Diagenesis_CH4AnaerobicLayer.csv', STATUS='unknown') 
+          Open(CEMASedFlxFilN36, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_CH4AnaerobicLayer.csv', STATUS='unknown') 
         END IF         
         WRITE(CEMASedFlxFilN36,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN36,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN36,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN37, File = "Diagenesis_pHAerobicLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN37, File = trim(SedFlxFolder)//'\Diagenesis_pHAerobicLayer.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN37, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_pHAerobicLayer.csv', STATUS='unknown')
         END IF        
         WRITE(CEMASedFlxFilN37,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN37,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN37,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN38, File = "Diagenesis_pHAnaerobicLayer.csv", STATUS='unknown')
         ELSE          
-          Open(CEMASedFlxFilN38, File = trim(SedFlxFolder)//'\Diagenesis_pHAnaerobicLayer.csv', STATUS='unknown') 
+          Open(CEMASedFlxFilN38, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_pHAnaerobicLayer.csv', STATUS='unknown') 
         END IF 
         WRITE(CEMASedFlxFilN38,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN38,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN38,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN39, File = "Diagenesis_SulfideAerobicLayer.csv", STATUS='unknown')
         ELSE          
-          Open(CEMASedFlxFilN39, File = trim(SedFlxFolder)//'\Diagenesis_SulfideAerobicLayer.csv', STATUS='unknown')
+          Open(CEMASedFlxFilN39, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SulfideAerobicLayer.csv', STATUS='unknown')
         END IF
         WRITE(CEMASedFlxFilN39,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN39,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN39,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN40, File = "Diagenesis_SulfideAnaerobicLayer.csv", STATUS='unknown')
         ELSE          
-          Open(CEMASedFlxFilN40, File = trim(SedFlxFolder)//'\Diagenesis_SulfideAnaerobicLayer.csv', STATUS='unknown') 
+          Open(CEMASedFlxFilN40, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_SulfideAnaerobicLayer.csv', STATUS='unknown') 
         END IF 
         WRITE(CEMASedFlxFilN40,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN40,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN40,'(A)') ''
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN41, File = "Diagenesis_TransferVelocity.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN41, File = trim(SedFlxFolder)//'\Diagenesis_TransferVelocity.csv', STATUS='unknown') 
+          Open(CEMASedFlxFilN41, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_TransferVelocity.csv', STATUS='unknown') 
         END IF 
         WRITE(CEMASedFlxFilN41,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN41,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN41,'(A)') ''        
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN42, File = "Diagenesis_TransferVelocity_SD_KL12.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN42, File = trim(SedFlxFolder)//'\Diagenesis_TransferVelocity_SD_KL12.csv', STATUS='unknown') 
+          Open(CEMASedFlxFilN42, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_TransferVelocity_SD_KL12.csv', STATUS='unknown') 
         END IF 
         WRITE(CEMASedFlxFilN42,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN42,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN42,'(A)') ''        
 
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN              
           Open(CEMASedFlxFilN43, File = "Diagenesis_TransferVelocity_SD_W12.csv", STATUS='unknown')
         ELSE
-          Open(CEMASedFlxFilN43, File = trim(SedFlxFolder)//'\Diagenesis_TransferVelocity_SD_W12.csv', STATUS='unknown') 
+          Open(CEMASedFlxFilN43, File = trim(SedFlxFolder)//PATH_SEP//'Diagenesis_TransferVelocity_SD_W12.csv', STATUS='unknown') 
         END IF 
         WRITE(CEMASedFlxFilN43,'(A)', ADVANCE='NO') 'Variable,JDAY,'; DO SegNumI = 1, IMX; WRITE(CEMASedFlxFilN43,'(i5,",")', ADVANCE='NO') SegNumI; END DO; WRITE(CEMASedFlxFilN43,'(A)') ''      
         
@@ -1409,35 +1410,35 @@
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN
           Open(CEMAOutFilN1, File = "Diagenesis_Bubble1_BubRad_Cg.csv", STATUS='unknown')
         ELSE
-          Open(CEMAOutFilN1, File = Trim(SedFlxFolder)//'\Diagenesis_Bubble1_BubRad_Cg.csv', STATUS='unknown')
+          Open(CEMAOutFilN1, File = Trim(SedFlxFolder)//PATH_SEP//'Diagenesis_Bubble1_BubRad_Cg.csv', STATUS='unknown')
         END IF   
         Write(CEMAOutFilN1,'(A)')'JDAY,SegNumI,BubbleRadiusSed(mm),Cg_total_in_Bubble(g/m3),C0_total(g/m3),Ctotal(g/m3),CrackStatus'
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN
           Open(CEMAOutFilN2, File = "Diagenesis_Bubble2_GasConc_at_Bottom_Layer.csv", STATUS='unknown')
         ELSE
-          Open(CEMAOutFilN2, File = Trim(SedFlxFolder)//'\Diagenesis_Bubble2_GasConc_at_Bottom_Layer.csv', STATUS='unknown')
+          Open(CEMAOutFilN2, File = Trim(SedFlxFolder)//PATH_SEP//'Diagenesis_Bubble2_GasConc_at_Bottom_Layer.csv', STATUS='unknown')
         END IF   
         Write(CEMAOutFilN2,'(A)')'JDAY,SegNumI,H2SConc(g/m3),CH4Conc(g/m3),NH3Conc(g/m3),CO2Conc(g/m3)'
 
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN
           Open(CEMAOutFilN3, File = "Diagenesis_Bubble3_BubbbleGasReleaseToAtmosphereRate.csv", STATUS='unknown')
         ELSE
-          Open(CEMAOutFilN3, File = Trim(SedFlxFolder)//'\Diagenesis_Bubble3_BubbleGasReleaseToAtmosphereRate.csv', STATUS='unknown')
+          Open(CEMAOutFilN3, File = Trim(SedFlxFolder)//PATH_SEP//'Diagenesis_Bubble3_BubbleGasReleaseToAtmosphereRate.csv', STATUS='unknown')
         END IF   
         Write(CEMAOutFilN3,'(A)')'JDAY,SegNumI,BubRelRateH2SConc(gm/s),BubRelRateCH4(gm/s),BubRelRateNH3(gm/s),BubRelRateCO2(gm/s)'
 
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN
           Open(CEMAOutFilBub, File = "Diagenesis_Bubble5_WaterBodySurfaceReleaseCumulative.csv", STATUS='unknown')
         ELSE
-          Open(CEMAOutFilBub, File = Trim(SedFlxFolder)//'\Diagenesis_Bubble5_WaterBodySurfaceReleaseCumulative.csv', STATUS='unknown')
+          Open(CEMAOutFilBub, File = Trim(SedFlxFolder)//PATH_SEP//'Diagenesis_Bubble5_WaterBodySurfaceReleaseCumulative.csv', STATUS='unknown')
         END IF   
         Write(CEMAOutFilBub,'(A)')'JDAY,Waterbody,BubbleReleaseH2S(kg),BubbleReleaseCH4(kg C),BubbleReleaseNH3(kg),BubbleReleaseCO2(kg C),NonBubbleCH4GasRelease(kg C)'     !,OverallCO2GasRelease(kg C)
         
         IF (SedFlxFolder == ' ' .OR. INDEX(SedFlxFolder, CHAR(0)) > 0) THEN
           Open(CEMAOutFilN4, File = "Diagenesis_Bubble4_DissGasSediments_BottomLayer.csv", STATUS='unknown')
         ELSE
-          Open(CEMAOutFilN4, File = Trim(SedFlxFolder)//'\Diagenesis_Bubble4_DissGasSediments_BottomLayer.csv', STATUS='unknown')
+          Open(CEMAOutFilN4, File = Trim(SedFlxFolder)//PATH_SEP//'Diagenesis_Bubble4_DissGasSediments_BottomLayer.csv', STATUS='unknown')
         END IF   
         Write(CEMAOutFilN4,'(A)')'JDAY,SegNumI,DissH2SConc(gm/m3),DissCH4Conc(gm/m3),DissNH3Conc(gm/m3),DissCO2Conc(gm/m3)'
         ENDIF
