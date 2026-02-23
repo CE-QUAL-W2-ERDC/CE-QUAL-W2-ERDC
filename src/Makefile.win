@@ -2,18 +2,19 @@
 # CE-QUAL-W2 Makefile for gfortran on Windows
 #
 # This Makefile compiles the CE-QUAL-W2 model using gfortran (MinGW-w64)
-# on Windows without requiring MSYS2. Use with mingw32-make.
+# on Windows. Works from Git Bash, MSYS2, or with mingw32-make.
 #
-# Usage:
-#   mingw32-make -f Makefile.win           - Build the executable
-#   mingw32-make -f Makefile.win clean     - Remove object files and modules
-#   mingw32-make -f Makefile.win distclean - Remove all generated files
-#   mingw32-make -f Makefile.win help      - Show available targets
+# Usage from Git Bash:
+#   make -f Makefile.win
+#   make -f Makefile.win clean
+#
+# Usage from Windows CMD (with mingw32-make):
+#   mingw32-make -f Makefile.win
+#
+# Alternative: use build.bat from Windows CMD (no make required)
 #
 # Prerequisites:
-#   - gfortran (MinGW-w64 distribution, e.g., WinLibs or standalone installer)
-#   - mingw32-make (included with MinGW-w64 distributions)
-#   - Add MinGW-w64 bin directory to PATH
+#   - gfortran in PATH
 #
 # Created: February 2026
 #******************************************************************************
@@ -21,9 +22,6 @@
 # Compiler and flags
 FC = gfortran
 PROGRAM = ce-qual-w2.exe
-
-# Use cmd.exe as shell (Windows native)
-SHELL = cmd.exe
 
 # Compiler flags (identical to Unix version)
 FFLAGS = -O2 \
@@ -37,7 +35,7 @@ FFLAGS = -O2 \
          -fdefault-double-8 \
          -fmax-stack-var-size=0
 
-# Optional flags for debugging (uncomment as needed)
+# Optional flags for debugging (comment out for production builds)
 DEBUG_FLAGS = -g -finit-local-zero -fcheck=all -fcheck=bounds
 FFLAGS += $(DEBUG_FLAGS)
 
@@ -51,62 +49,68 @@ FFLAGS += $(DEBUG_FLAGS)
 # Module definition file (MUST be compiled first)
 MODULE_SRC = w2modules.F90
 
-# Object files listed explicitly (avoids issues with spaces in filenames)
-MODULE_OBJ = w2modules.o
+# Subroutine source files (in dependency order)
+SUBROUTINE_SRCS = \
+	preprocessor_definitions.fpp \
+	date.f90 \
+	density.f90 \
+	systdg.f90 \
+	tdg.f90 \
+	TDGtarget.f90 \
+	MetFileRegion.f90 \
+	ReduceReaerAlgae.f90 \
+	Plunge_Point.f90 \
+	shading.f90 \
+	gas-transfer.f90 \
+	heat-exchange.f90 \
+	macrophyte-aux.f90 \
+	aerate.f90 \
+	envir_perf.f90 \
+	fishhabitat.f90 \
+	particle.f90 \
+	az.f90 \
+	Diagenesis\ Input\ Files\ Read\ 01.f90 \
+	Diagenesis\ Input\ 02.f90 \
+	Diagenesis\ FFT\ Layer\ 01.f90 \
+	Diagenesis\ Sediment\ Flux\ Model\ 05.f90 \
+	Diagenesis\ Sediment\ Model\ 03.f90 \
+	Diagenesis\ Bubbles\ Code\ 01.f90 \
+	Diagenesis\ Output\ 02.f90 \
+	wqconstituents.F90 \
+	water-quality.f90 \
+	transport.f90 \
+	temperature.F90 \
+	gate-spill-pipe.f90 \
+	withdrawal.f90 \
+	waterbody.f90 \
+	init-u-elws.f90 \
+	init-geom.F90 \
+	init-cond.F90 \
+	hydroinout.F90 \
+	time-varying-data.f90 \
+	layeraddsub.F90 \
+	balances.F90 \
+	update.F90 \
+	restart.f90 \
+	output.f90 \
+	outputa2w2tools.F90 \
+	outputinitw2tools.F90 \
+	endsimulation.F90 \
+	init.F90 \
+	input.F90 \
+	screen_output_unix.f90 \
+	status_output.f90 \
+	unix_stubs.f90
 
-SUBROUTINE_OBJS = \
-	preprocessor_definitions.o \
-	date.o \
-	density.o \
-	systdg.o \
-	tdg.o \
-	TDGtarget.o \
-	MetFileRegion.o \
-	ReduceReaerAlgae.o \
-	Plunge_Point.o \
-	shading.o \
-	gas-transfer.o \
-	heat-exchange.o \
-	macrophyte-aux.o \
-	aerate.o \
-	envir_perf.o \
-	fishhabitat.o \
-	particle.o \
-	az.o \
-	"Diagenesis Input Files Read 01.o" \
-	"Diagenesis Input 02.o" \
-	"Diagenesis FFT Layer 01.o" \
-	"Diagenesis Sediment Flux Model 05.o" \
-	"Diagenesis Sediment Model 03.o" \
-	"Diagenesis Bubbles Code 01.o" \
-	"Diagenesis Output 02.o" \
-	wqconstituents.o \
-	water-quality.o \
-	transport.o \
-	temperature.o \
-	gate-spill-pipe.o \
-	withdrawal.o \
-	waterbody.o \
-	init-u-elws.o \
-	init-geom.o \
-	init-cond.o \
-	hydroinout.o \
-	time-varying-data.o \
-	layeraddsub.o \
-	balances.o \
-	update.o \
-	restart.o \
-	output.o \
-	outputa2w2tools.o \
-	outputinitw2tools.o \
-	endsimulation.o \
-	init.o \
-	input.o \
-	screen_output_unix.o \
-	status_output.o \
-	unix_stubs.o
+# Main program
+MAIN_SRC = w2_4_unix.f90
 
-MAIN_OBJ = w2_4_unix.o
+# Object files (derived from source files)
+MODULE_OBJ = $(MODULE_SRC:.F90=.o)
+SUBROUTINE_OBJS = $(SUBROUTINE_SRCS:.f90=.o)
+SUBROUTINE_OBJS := $(SUBROUTINE_OBJS:.F90=.o)
+SUBROUTINE_OBJS := $(SUBROUTINE_OBJS:.fpp=.o)
+MAIN_OBJ = $(MAIN_SRC:.f90=.o)
 
 ALL_OBJS = $(MODULE_OBJ) $(SUBROUTINE_OBJS) $(MAIN_OBJ)
 
@@ -123,93 +127,91 @@ all: $(PROGRAM)
 
 # Link all object files to create executable
 $(PROGRAM): $(ALL_OBJS)
-	@echo ==================================================
-	@echo Linking $(PROGRAM)...
-	@echo ==================================================
+	@echo "=================================================="
+	@echo "Linking $(PROGRAM)..."
+	@echo "=================================================="
 	$(FC) $(FFLAGS) -o $@ $(ALL_OBJS)
-	@echo.
-	@echo Build successful! Executable: $(PROGRAM)
-	@echo.
+	@echo ""
+	@echo "Build successful! Executable: $(PROGRAM)"
+	@echo ""
 
 # Compile module file first (creates .mod files needed by other sources)
 $(MODULE_OBJ): $(MODULE_SRC)
-	@echo Compiling modules: $(MODULE_SRC)
-	$(FC) $(FFLAGS) -c $(MODULE_SRC)
+	@echo "Compiling modules: $<"
+	$(FC) $(FFLAGS) -c $<
 
 # Pattern rules for compiling source files
 %.o: %.f90
-	@echo Compiling: $<
+	@echo "Compiling: $<"
 	$(FC) $(FFLAGS) -c $<
 
 %.o: %.F90
-	@echo Compiling (preprocessed): $<
+	@echo "Compiling (preprocessed): $<"
 	$(FC) $(FFLAGS) -c $<
 
 %.o: %.fpp
-	@echo Compiling (preprocessed): $<
+	@echo "Compiling (preprocessed): $<"
 	$(FC) $(FFLAGS) -c $<
 
 # Special handling for files with spaces in names
-"Diagenesis Input Files Read 01.o": "Diagenesis Input Files Read 01.f90"
-	@echo Compiling: Diagenesis Input Files Read 01.f90
-	$(FC) $(FFLAGS) -c "Diagenesis Input Files Read 01.f90"
+Diagenesis\ Input\ Files\ Read\ 01.o: Diagenesis\ Input\ Files\ Read\ 01.f90
+	@echo "Compiling: $<"
+	$(FC) $(FFLAGS) -c "$<"
 
-"Diagenesis Input 02.o": "Diagenesis Input 02.f90"
-	@echo Compiling: Diagenesis Input 02.f90
-	$(FC) $(FFLAGS) -c "Diagenesis Input 02.f90"
+Diagenesis\ Input\ 02.o: Diagenesis\ Input\ 02.f90
+	@echo "Compiling: $<"
+	$(FC) $(FFLAGS) -c "$<"
 
-"Diagenesis FFT Layer 01.o": "Diagenesis FFT Layer 01.f90"
-	@echo Compiling: Diagenesis FFT Layer 01.f90
-	$(FC) $(FFLAGS) -c "Diagenesis FFT Layer 01.f90"
+Diagenesis\ FFT\ Layer\ 01.o: Diagenesis\ FFT\ Layer\ 01.f90
+	@echo "Compiling: $<"
+	$(FC) $(FFLAGS) -c "$<"
 
-"Diagenesis Sediment Model 03.o": "Diagenesis Sediment Model 03.f90"
-	@echo Compiling: Diagenesis Sediment Model 03.f90
-	$(FC) $(FFLAGS) -c "Diagenesis Sediment Model 03.f90"
+Diagenesis\ Sediment\ Model\ 03.o: Diagenesis\ Sediment\ Model\ 03.f90
+	@echo "Compiling: $<"
+	$(FC) $(FFLAGS) -c "$<"
 
-"Diagenesis Sediment Flux Model 05.o": "Diagenesis Sediment Flux Model 05.f90"
-	@echo Compiling: Diagenesis Sediment Flux Model 05.f90
-	$(FC) $(FFLAGS) -c "Diagenesis Sediment Flux Model 05.f90"
+Diagenesis\ Sediment\ Flux\ Model\ 05.o: Diagenesis\ Sediment\ Flux\ Model\ 05.f90
+	@echo "Compiling: $<"
+	$(FC) $(FFLAGS) -c "$<"
 
-"Diagenesis Bubbles Code 01.o": "Diagenesis Bubbles Code 01.f90"
-	@echo Compiling: Diagenesis Bubbles Code 01.f90
-	$(FC) $(FFLAGS) -c "Diagenesis Bubbles Code 01.f90"
+Diagenesis\ Bubbles\ Code\ 01.o: Diagenesis\ Bubbles\ Code\ 01.f90
+	@echo "Compiling: $<"
+	$(FC) $(FFLAGS) -c "$<"
 
-"Diagenesis Output 02.o": "Diagenesis Output 02.f90"
-	@echo Compiling: Diagenesis Output 02.f90
-	$(FC) $(FFLAGS) -c "Diagenesis Output 02.f90"
+Diagenesis\ Output\ 02.o: Diagenesis\ Output\ 02.f90
+	@echo "Compiling: $<"
+	$(FC) $(FFLAGS) -c "$<"
 
 #******************************************************************************
-# Clean targets (Windows native commands)
+# Clean targets
 #******************************************************************************
 
 clean:
-	@echo Cleaning object files and modules...
-	-del /q *.o 2>nul
-	-del /q *.mod 2>nul
-	-del /q *.smod 2>nul
-	@echo Clean complete.
+	@echo "Cleaning object files and modules..."
+	rm -f *.o *.mod *.smod
+	@echo "Clean complete."
 
 distclean: clean
-	@echo Removing executable and backup files...
-	-del /q $(PROGRAM) 2>nul
-	-del /q *.dwf 2>nul
-	-del /q *.pdb 2>nul
-	@echo Distclean complete.
+	@echo "Removing executable and backup files..."
+	rm -f $(PROGRAM)
+	rm -f *.dwf *.pdb
+	@echo "Distclean complete."
 
 #******************************************************************************
 # Help target
 #******************************************************************************
 
 help:
-	@echo CE-QUAL-W2 Makefile for gfortran on Windows
-	@echo.
-	@echo Available targets:
-	@echo   mingw32-make -f Makefile.win           - Build the CE-QUAL-W2 executable
-	@echo   mingw32-make -f Makefile.win clean     - Remove object files and modules
-	@echo   mingw32-make -f Makefile.win distclean - Remove all generated files
-	@echo   mingw32-make -f Makefile.win help      - Show this help message
-	@echo.
-	@echo Compiler: $(FC)
-	@echo.
+	@echo "CE-QUAL-W2 Makefile for gfortran on Windows"
+	@echo ""
+	@echo "Available targets:"
+	@echo "  make -f Makefile.win           - Build the CE-QUAL-W2 executable"
+	@echo "  make -f Makefile.win clean     - Remove object files and modules"
+	@echo "  make -f Makefile.win distclean - Remove all generated files"
+	@echo "  make -f Makefile.win help      - Show this help message"
+	@echo ""
+	@echo "Compiler: $(FC)"
+	@echo "Flags: $(FFLAGS)"
+	@echo ""
 
 .PHONY: all clean distclean help
