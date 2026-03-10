@@ -45,3 +45,8 @@ tests/hab/run_hab_tests
 
 # MacOS
 .DS_Store
+
+# PyCharm files
+CMakeLists.txt
+main.cpp
+.idea
