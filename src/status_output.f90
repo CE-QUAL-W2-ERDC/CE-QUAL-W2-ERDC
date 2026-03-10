@@ -6,25 +6,25 @@
 !***********************************************************************************************************************************
 
 SUBROUTINE WRITE_STATUS_FILE
-  USE GEOMC,      ONLY: ELWS, Z
-  USE GLOBAL,     ONLY: NWB, NBR, NTR, NWD, NSP, NGT, NPI, NPU, KTWB, ELKT, DLT, MODDIR, CCTIME, CDATE
-  USE GDAYC,      ONLY: MONTH, GDAY, YEAR, JDAYG
-  USE SCREENC,    ONLY: JDAY, DLTS1, JDMIN, MINDLT, DLTAV, NIT, NV, ILOC, KLOC, IMIN, KMIN, ZMIN, IZMIN
-  USE SURFHE,     ONLY: ET, CSHE, WIND
-  USE TVDC,       ONLY: QIN, TIN, QDTR, TDTR, QTR, TTR, QWD, SRON, CLOUD, TAIR, TDEW, PHI
-  USE STRUCTURES, ONLY: QSP, QGT, QPI, QPU
-  USE LOGICC,     ONLY: TERM_BY_TERM
-  USE MAIN,       ONLY: TMSTRT, TMEND
-  USE PREC,       ONLY: R8
+  USE GEOMC, ONLY : ELWS, Z
+  USE GLOBAL, ONLY : NWB, NBR, NTR, NWD, NSP, NGT, NPI, NPU, KTWB, ELKT, DLT, MODDIR, CCTIME, CDATE
+  USE GDAYC, ONLY : MONTH, GDAY, YEAR, JDAYG
+  USE SCREENC, ONLY : JDAY, DLTS1, JDMIN, MINDLT, DLTAV, NIT, NV, ILOC, KLOC, IMIN, KMIN, ZMIN, IZMIN
+  USE SURFHE, ONLY : ET, CSHE, WIND
+  USE TVDC, ONLY : QIN, TIN, QDTR, TDTR, QTR, TTR, QWD, SRON, CLOUD, TAIR, TDEW, PHI
+  USE STRUCTURES, ONLY : QSP, QGT, QPI, QPU
+  USE LOGICC, ONLY : TERM_BY_TERM
+  USE MAIN, ONLY : TMSTRT, TMEND
+  USE PREC, ONLY : R8
   IMPLICIT NONE
 
-  INTEGER            :: I, ISTAT
+  INTEGER :: I, ISTAT
   INTEGER, PARAMETER :: STATUS_UNIT = 9999
-  REAL               :: PROGRESS_PCT, CPU_CURRENT, RHOWCP_LOCAL
-  REAL(R8)           :: CURRENT_CPU
-  CHARACTER(8)       :: TIME_STR
-  CHARACTER(256)     :: STATUS_FILE
-  CHARACTER(32)      :: FMT_REAL, FMT_INT
+  REAL :: PROGRESS_PCT, CPU_CURRENT, RHOWCP_LOCAL
+  REAL(R8) :: CURRENT_CPU
+  CHARACTER(8) :: TIME_STR
+  CHARACTER(256) :: STATUS_FILE
+  CHARACTER(32) :: FMT_REAL, FMT_INT
 
   ! Parameter for heat capacity
   RHOWCP_LOCAL = 4186000.0  ! J/(m3*degC)
@@ -34,7 +34,7 @@ SUBROUTINE WRITE_STATUS_FILE
   CPU_CURRENT = REAL(CURRENT_CPU)
 
   ! Format current time
-  TIME_STR = CCTIME(1:2)//':'//CCTIME(3:4)//':'//CCTIME(5:6)
+  TIME_STR = CCTIME(1:2) // ':' // CCTIME(3:4) // ':' // CCTIME(5:6)
 
   ! Calculate progress percentage
   IF (TMEND > TMSTRT) THEN
@@ -48,7 +48,7 @@ SUBROUTINE WRITE_STATUS_FILE
   ! Write to status file (in current directory)
   STATUS_FILE = 'w2_status.json'
 
-  OPEN(UNIT=STATUS_UNIT, FILE=TRIM(STATUS_FILE), STATUS='REPLACE', ACTION='WRITE', IOSTAT=ISTAT)
+  OPEN(UNIT = STATUS_UNIT, FILE = TRIM(STATUS_FILE), STATUS = 'REPLACE', ACTION = 'WRITE', IOSTAT = ISTAT)
   IF (ISTAT /= 0) RETURN  ! Silently fail if cannot open
 
   WRITE(STATUS_UNIT, '(A)') '{'
@@ -108,48 +108,48 @@ SUBROUTINE WRITE_STATUS_FILE
   WRITE(STATUS_UNIT, '(A)') '  "flows": {'
 
   ! Branch inflows
-  WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') '    "branch_inflow_m3s": ['
+  WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') '    "branch_inflow_m3s": ['
   DO I = 1, NBR
-    IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') ', '
-    WRITE(STATUS_UNIT, '(F10.3)', ADVANCE='NO') QIN(I)
+    IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') ', '
+    WRITE(STATUS_UNIT, '(F10.3)', ADVANCE = 'NO') QIN(I)
   END DO
   WRITE(STATUS_UNIT, '(A)') '],'
 
-  WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') '    "branch_inflow_temp_c": ['
+  WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') '    "branch_inflow_temp_c": ['
   DO I = 1, NBR
-    IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') ', '
-    WRITE(STATUS_UNIT, '(F8.2)', ADVANCE='NO') TIN(I)
+    IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') ', '
+    WRITE(STATUS_UNIT, '(F8.2)', ADVANCE = 'NO') TIN(I)
   END DO
   WRITE(STATUS_UNIT, '(A)') '],'
 
   ! Distributed tributaries
-  WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') '    "dist_trib_flow_m3s": ['
+  WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') '    "dist_trib_flow_m3s": ['
   DO I = 1, NBR
-    IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') ', '
-    WRITE(STATUS_UNIT, '(F10.3)', ADVANCE='NO') QDTR(I)
+    IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') ', '
+    WRITE(STATUS_UNIT, '(F10.3)', ADVANCE = 'NO') QDTR(I)
   END DO
   WRITE(STATUS_UNIT, '(A)') '],'
 
-  WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') '    "dist_trib_temp_c": ['
+  WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') '    "dist_trib_temp_c": ['
   DO I = 1, NBR
-    IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') ', '
-    WRITE(STATUS_UNIT, '(F8.2)', ADVANCE='NO') TDTR(I)
+    IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') ', '
+    WRITE(STATUS_UNIT, '(F8.2)', ADVANCE = 'NO') TDTR(I)
   END DO
   WRITE(STATUS_UNIT, '(A)') '],'
 
   ! Tributaries
   IF (NTR > 0) THEN
-    WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') '    "tributary_flow_m3s": ['
+    WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') '    "tributary_flow_m3s": ['
     DO I = 1, NTR
-      IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') ', '
-      WRITE(STATUS_UNIT, '(F10.3)', ADVANCE='NO') QTR(I)
+      IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') ', '
+      WRITE(STATUS_UNIT, '(F10.3)', ADVANCE = 'NO') QTR(I)
     END DO
     WRITE(STATUS_UNIT, '(A)') '],'
 
-    WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') '    "tributary_temp_c": ['
+    WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') '    "tributary_temp_c": ['
     DO I = 1, NTR
-      IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') ', '
-      WRITE(STATUS_UNIT, '(F8.2)', ADVANCE='NO') TTR(I)
+      IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') ', '
+      WRITE(STATUS_UNIT, '(F8.2)', ADVANCE = 'NO') TTR(I)
     END DO
     WRITE(STATUS_UNIT, '(A)') '],'
   ELSE
@@ -159,10 +159,10 @@ SUBROUTINE WRITE_STATUS_FILE
 
   ! Spillways
   IF (NSP > 0) THEN
-    WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') '    "spillway_flow_m3s": ['
+    WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') '    "spillway_flow_m3s": ['
     DO I = 1, NSP
-      IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') ', '
-      WRITE(STATUS_UNIT, '(F10.3)', ADVANCE='NO') QSP(I)
+      IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') ', '
+      WRITE(STATUS_UNIT, '(F10.3)', ADVANCE = 'NO') QSP(I)
     END DO
     WRITE(STATUS_UNIT, '(A)') '],'
   ELSE
@@ -171,10 +171,10 @@ SUBROUTINE WRITE_STATUS_FILE
 
   ! Gates
   IF (NGT > 0) THEN
-    WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') '    "gate_flow_m3s": ['
+    WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') '    "gate_flow_m3s": ['
     DO I = 1, NGT
-      IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') ', '
-      WRITE(STATUS_UNIT, '(F10.3)', ADVANCE='NO') QGT(I)
+      IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') ', '
+      WRITE(STATUS_UNIT, '(F10.3)', ADVANCE = 'NO') QGT(I)
     END DO
     WRITE(STATUS_UNIT, '(A)') '],'
   ELSE
@@ -183,10 +183,10 @@ SUBROUTINE WRITE_STATUS_FILE
 
   ! Pipes
   IF (NPI > 0) THEN
-    WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') '    "pipe_flow_m3s": ['
+    WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') '    "pipe_flow_m3s": ['
     DO I = 1, NPI
-      IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') ', '
-      WRITE(STATUS_UNIT, '(F10.3)', ADVANCE='NO') QPI(I)
+      IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') ', '
+      WRITE(STATUS_UNIT, '(F10.3)', ADVANCE = 'NO') QPI(I)
     END DO
     WRITE(STATUS_UNIT, '(A)') '],'
   ELSE
@@ -195,10 +195,10 @@ SUBROUTINE WRITE_STATUS_FILE
 
   ! Pumps
   IF (NPU > 0) THEN
-    WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') '    "pump_flow_m3s": ['
+    WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') '    "pump_flow_m3s": ['
     DO I = 1, NPU
-      IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') ', '
-      WRITE(STATUS_UNIT, '(F10.3)', ADVANCE='NO') QPU(I)
+      IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') ', '
+      WRITE(STATUS_UNIT, '(F10.3)', ADVANCE = 'NO') QPU(I)
     END DO
     WRITE(STATUS_UNIT, '(A)') '],'
   ELSE
@@ -207,10 +207,10 @@ SUBROUTINE WRITE_STATUS_FILE
 
   ! Withdrawals
   IF (NWD > 0) THEN
-    WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') '    "withdrawal_flow_m3s": ['
+    WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') '    "withdrawal_flow_m3s": ['
     DO I = 1, NWD
-      IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE='NO') ', '
-      WRITE(STATUS_UNIT, '(F10.3)', ADVANCE='NO') QWD(I)
+      IF (I > 1) WRITE(STATUS_UNIT, '(A)', ADVANCE = 'NO') ', '
+      WRITE(STATUS_UNIT, '(F10.3)', ADVANCE = 'NO') QWD(I)
     END DO
     WRITE(STATUS_UNIT, '(A)') ']'
   ELSE
@@ -243,26 +243,26 @@ END SUBROUTINE WRITE_STATUS_FILE
 !***********************************************************************************************************************************
 
 SUBROUTINE WRITE_STATUS_COMPLETE(STATUS_MSG)
-  USE GLOBAL, ONLY: CCTIME, CDATE
-  USE SCREENC, ONLY: JDAY, NIT, NV
-  USE MAIN, ONLY: TMSTRT, TMEND
-  USE PREC, ONLY: R8
+  USE GLOBAL, ONLY : CCTIME, CDATE
+  USE SCREENC, ONLY : JDAY, NIT, NV
+  USE MAIN, ONLY : TMSTRT, TMEND
+  USE PREC, ONLY : R8
   IMPLICIT NONE
 
   CHARACTER(*), INTENT(IN) :: STATUS_MSG
-  INTEGER            :: ISTAT
+  INTEGER :: ISTAT
   INTEGER, PARAMETER :: STATUS_UNIT = 9999
-  REAL(R8)           :: CURRENT_CPU, CPU_CURRENT
-  CHARACTER(8)       :: TIME_STR
-  CHARACTER(256)     :: STATUS_FILE
+  REAL(R8) :: CURRENT_CPU, CPU_CURRENT
+  CHARACTER(8) :: TIME_STR
+  CHARACTER(256) :: STATUS_FILE
 
   CALL CPU_TIME(CURRENT_CPU)
   CPU_CURRENT = REAL(CURRENT_CPU)
-  TIME_STR = CCTIME(1:2)//':'//CCTIME(3:4)//':'//CCTIME(5:6)
+  TIME_STR = CCTIME(1:2) // ':' // CCTIME(3:4) // ':' // CCTIME(5:6)
 
   STATUS_FILE = 'w2_status.json'
 
-  OPEN(UNIT=STATUS_UNIT, FILE=TRIM(STATUS_FILE), STATUS='REPLACE', ACTION='WRITE', IOSTAT=ISTAT)
+  OPEN(UNIT = STATUS_UNIT, FILE = TRIM(STATUS_FILE), STATUS = 'REPLACE', ACTION = 'WRITE', IOSTAT = ISTAT)
   IF (ISTAT /= 0) RETURN
 
   WRITE(STATUS_UNIT, '(A)') '{'
