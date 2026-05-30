@@ -2319,7 +2319,7 @@ SUBROUTINE INPUT
     AM_LOW_DO = AM_LOW_DO / DAY                                      !> Convert to model time units. DAY=86400.0 (global parameter)
     CRIT_T = CRIT_T * DAY                                            !> Convert to model time units. DAY=86400.0 (global parameter)
   ENDIF
-  !> sch 25Jan2025. End Low DO - high mortality option input reading.
+  !> sch 26JUN2025. End Low DO - high mortality option input reading.
 
   !> sch 25Jan2025. Start reading N-fixation option inputs.
   NFIX_OPTION_EXIST = .FALSE.                                        !> If N-fix option input file exists, then read and initialize inputs.
