@@ -180,7 +180,7 @@ Subroutine GasBubblesFormation(Radius, DeltaT, Volume)
     temp = INT(NbubbLost, KIND = 4)  ! Replaced INT4 for gfortran compatibility
 
     FoundOpenArray = .FALSE.
-    MFTBubbReleased(SegNumI) = INT(NbubbLost)  ! Replaced KIDINT for gfortran compatibility
+    MFTBubbReleased(SegNumI) = INT(NbubbLost, KIND = 8)  ! KIDINT returns INTEGER(8); keep the kind of MFTBubbReleased
     !nTry = 0
     Do nRelArr = 1, NumBubRelArr
       !nTry = nTry + 1

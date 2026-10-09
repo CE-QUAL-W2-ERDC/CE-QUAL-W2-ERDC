@@ -350,6 +350,7 @@ SUBROUTINE LAYERADDSUB
           CSSK(KT, I, CN(1:NAC)) = CSSK(KT + 1, I, CN(1:NAC))
           KF(KT, I, KFCN(1:NAF(JW), JW)) = KF(KT + 1, I, KFCN(1:NAF(JW), JW))
           KFS(KT, I, KFCN(1:NAF(JW), JW)) = KFS(KT + 1, I, KFCN(1:NAF(JW), JW))                 !KF(KT+1,I,KFCN(1:NAF(JW),JW))   CODE ERROR FIX SW 10/24/2017
+          KFS(KT + 1, I, KFCN(1:NAF(JW), JW)) = 0.0     ! accumulated mass (g) now carried by layer KT; zero here so it is not counted twice
           !KF(KT+1,I,KFCN(1:NAF(JW),JW))  = 0.0   ! moved below 11/16/2022 SW
           !KFS(KT+1,I,KFCN(1:NAF(JW),JW)) = 0.0
           TISS(KT, I) = TISS(KT + 1, I)   ! PART OF CD BUT IF NOT ACTIVE IT IS STILL USED FOR LIGHT EXTINCTION

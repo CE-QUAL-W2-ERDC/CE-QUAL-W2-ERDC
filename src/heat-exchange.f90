@@ -73,8 +73,13 @@ SUBROUTINE HEAT_EXCHANGE
   !WIND2M   = WIND_MPH*DLOG(2.0D0/Z0(JW))/DLOG(WINDH(JW)/Z0(JW))+NONZERO     ! SW 11/28/07  old version z0=0.003
   WIND2M = WIND2(I) * MPS_TO_MPH    ! ALREADY COMPUTED IN w2 MAIN PROGRAM
   ACONV = W_M2_TO_BTU_FT2_DAY
-  IF (CFW(JW) == 1.0) BCONV = 3.401062
-  IF (CFW(JW) == 2.0) BCONV = 1.520411
+  IF (CFW(JW) == 1.0) THEN
+    BCONV = 3.401062
+  ELSE IF (CFW(JW) == 2.0) THEN
+    BCONV = 1.520411
+  ELSE
+    BCONV = W_M2_TO_BTU_FT2_DAY / MPS_TO_MPH**CFW(JW)   ! general conversion of BFW*WIND**CFW to British units
+  END IF
   ! SW Issues: CFW not determined for other values of CFW
 
   ! Equilibrium temperature and heat exchange coefficient

@@ -102,6 +102,13 @@ SUBROUTINE KINETICS
   !ALGAE_SETTLING_EXIST=.FALSE.  ! CO 6/4/2019
   ALGAE_SETTLING(:) = .FALSE.  ! CO 6/5/2019
   NITWQ = 0
+  ! iday (a REAL, Julian day) is the day of the last algal-rate update; it is set after the algal loop
+  ! in KINETIC_RATES and kept between calls by the SAVE statement above. NITWQ counts updates on distinct
+  ! days (once per time step, however many waterbodies call KINETIC_RATES). Starting below any model day
+  ! makes the first update count as NITWQ = 1, when the initial colony density is set. The comparison
+  ! "jday > iday" may be evaluated on every call even when algal migration is off (Fortran does not
+  ! guarantee short-circuit evaluation of .AND.), so iday needs a defined value from the first call.
+  iday = -HUGE(iday)
   !INQUIRE(FILE='w2_AlgaeMigration.csv',EXIST=ALGAE_SETTLING_EXIST)
   IF(ALGAE_SETTLING_EXIST)THEN
     OPEN(2450, FILE = 'w2_AlgaeMigration.csv', STATUS = 'OLD')

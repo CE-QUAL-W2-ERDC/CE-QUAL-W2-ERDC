@@ -28,7 +28,8 @@ SUBROUTINE SCREEN_UPDATE_UNIX()
 
   ! Print compact progress update (overwrites previous line)
   WRITE(*, '(A)', ADVANCE = 'NO') CHAR(13)  ! Carriage return to overwrite line
-  WRITE(*, '(A,I0,A,I0,A,F6.2,A,I3,A,I6,A,I6,A,F8.0,A,F6.1,A)', ADVANCE = 'NO') &
+  ! NIT and NV use I0: an I6 field printed "******" once the iteration count passed 999,999
+  WRITE(*, '(A,I0,A,I0,A,F6.2,A,I3,A,I0,A,I0,A,F8.0,A,F6.1,A)', ADVANCE = 'NO') &
     'JDay:', INT(JDAY), &
     ' Hr:', INT((JDAY - INT(JDAY)) * 24.0), &
     ' Elap:', ELTMJD, &

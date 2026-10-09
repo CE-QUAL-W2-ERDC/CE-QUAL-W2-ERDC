@@ -239,6 +239,40 @@ END SUBROUTINE WRITE_STATUS_FILE
 
 
 !***********************************************************************************************************************************
+!**                         S U B R O U T I N E   W R I T E _ S T A T U S _ F I L E _ T I M E D                                **
+!**                                                                                                                           **
+!**  Calls WRITE_STATUS_FILE on the first call, whenever FORCE is true, and otherwise only when at least                       **
+!**  STATUS_INTERVAL_S seconds of wall-clock time have passed since the last write. The time loop calls this once per         **
+!**  time step; writing the file every step (up to about 2,000 open-write-close cycles per second of run time when the        **
+!**  time step is small) added file-system load without giving a monitor that polls the file any more information. The       **
+!**  file content and layout are those of WRITE_STATUS_FILE; the end-of-run record is still written by                        **
+!**  WRITE_STATUS_COMPLETE.                                                                                                   **
+!***********************************************************************************************************************************
+
+SUBROUTINE WRITE_STATUS_FILE_TIMED(FORCE)
+  IMPLICIT NONE
+
+  LOGICAL, INTENT(IN) :: FORCE
+  EXTERNAL WRITE_STATUS_FILE
+
+  ! Minimum wall-clock interval between status-file writes, s
+  INTEGER(8), PARAMETER :: STATUS_INTERVAL_S = 1
+  INTEGER(8), SAVE :: LAST_COUNT = 0
+  LOGICAL, SAVE :: WRITTEN = .FALSE.
+  INTEGER(8) :: CLOCK_COUNT, CLOCK_RATE
+
+  ! INTEGER(8) arguments select the high-resolution system clock; CLOCK_RATE is in counts per second
+  CALL SYSTEM_CLOCK(CLOCK_COUNT, CLOCK_RATE)
+  IF (FORCE .OR. .NOT. WRITTEN .OR. CLOCK_COUNT - LAST_COUNT >= STATUS_INTERVAL_S * CLOCK_RATE) THEN
+    CALL WRITE_STATUS_FILE()
+    LAST_COUNT = CLOCK_COUNT
+    WRITTEN = .TRUE.
+  END IF
+
+END SUBROUTINE WRITE_STATUS_FILE_TIMED
+
+
+!***********************************************************************************************************************************
 !**                              S U B R O U T I N E   W R I T E _ S T A T U S _ C O M P L E T E                               **
 !***********************************************************************************************************************************
 
@@ -253,12 +287,18 @@ SUBROUTINE WRITE_STATUS_COMPLETE(STATUS_MSG)
   INTEGER :: ISTAT
   INTEGER, PARAMETER :: STATUS_UNIT = 9999
   REAL(R8) :: CURRENT_CPU, CPU_CURRENT
+  REAL :: PROGRESS_PCT
   CHARACTER(8) :: TIME_STR
   CHARACTER(256) :: STATUS_FILE
 
   CALL CPU_TIME(CURRENT_CPU)
   CPU_CURRENT = REAL(CURRENT_CPU)
   TIME_STR = CCTIME(1:2) // ':' // CCTIME(3:4) // ':' // CCTIME(5:6)
+
+  ! Share of the simulation period reached, percent: 100 when the run reached TMEND, less when it
+  ! failed or was stopped (same clamp as WRITE_STATUS_FILE)
+  PROGRESS_PCT = 100.0
+  IF (TMEND > TMSTRT) PROGRESS_PCT = MIN(MAX((JDAY - TMSTRT) / (TMEND - TMSTRT) * 100.0, 0.0), 100.0)
 
   STATUS_FILE = 'w2_status.json'
 
@@ -273,7 +313,7 @@ SUBROUTINE WRITE_STATUS_COMPLETE(STATUS_MSG)
   WRITE(STATUS_UNIT, '(A,I0,A)') '    "total_iterations": ', NIT, ','
   WRITE(STATUS_UNIT, '(A,I0,A)') '    "total_violations": ', NV, ','
   WRITE(STATUS_UNIT, '(A,F12.4,A)') '    "final_day": ', JDAY, ','
-  WRITE(STATUS_UNIT, '(A)') '    "progress_percent": 100.0'
+  WRITE(STATUS_UNIT, '(A,F5.1)') '    "progress_percent": ', PROGRESS_PCT     ! F5.1 keeps the leading zero JSON needs
   WRITE(STATUS_UNIT, '(A)') '  }'
   WRITE(STATUS_UNIT, '(A)') '}'
 

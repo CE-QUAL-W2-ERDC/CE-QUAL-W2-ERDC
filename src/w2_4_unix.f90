@@ -31,6 +31,7 @@ PROGRAM CE_QUAL_W2_UNIX
 
   WRITE(*, '(A)') '============================================================'
   WRITE(*, '(A)') '   CE-QUAL-W2 Version 4.5 - Unix/MacOS Console Version'
+  WRITE(*, '(A)') '   Release ' // RELEASE_VERSION
   WRITE(*, '(A)') '   Two-Dimensional Hydrodynamic and Water Quality Model'
   WRITE(*, '(A)') '============================================================'
   WRITE(*, '(A)') ''
@@ -47,6 +48,10 @@ PROGRAM CE_QUAL_W2_UNIX
     WRITE(*, '(/A)') 'CE-QUAL-W2 completed successfully.'
   ELSE
     WRITE(*, '(/A,I0)') 'CE-QUAL-W2 ended with status code: ', RESULT
+    ! Process exit status 1 tells calling scripts that the run failed. EXIT (GNU extension) is used
+    ! instead of ERROR STOP because a build with -fbacktrace prints a backtrace after ERROR STOP, which
+    ! adds nothing to the error message already written and reads as a crash of the program itself.
+    CALL EXIT(1)
   END IF
 
 END PROGRAM CE_QUAL_W2_UNIX
@@ -67,12 +72,16 @@ INTEGER FUNCTION CE_QUAL_W2_MAIN()
   USE INITIALVELOCITY; USE ENVIRPMOD
   USE BIOENERGETICS
   USE BUILDVERSION; USE MetFileRegion; USE HYPOAERATION
+  USE ISO_FORTRAN_ENV, ONLY : COMPILER_VERSION, COMPILER_OPTIONS, ERROR_UNIT
   IMPLICIT NONE
 
   EXTERNAL RESTART_OUTPUT
   EXTERNAL WRITE_STATUS_FILE
+  EXTERNAL WRITE_STATUS_FILE_TIMED
   EXTERNAL WRITE_STATUS_COMPLETE
   INTEGER :: RESULT
+  INTEGER :: ERR_UNIT, ERR_STAT, ERR_LINES
+  CHARACTER(256) :: ERR_LINE
   CHARACTER(240) :: MODDIR1
   REAL :: DEPTH
   LOGICAL :: CSVFORMAT
@@ -98,12 +107,12 @@ INTEGER FUNCTION CE_QUAL_W2_MAIN()
       WRITE(*, *)'ERROR: The directory does not exist:', TRIM(DIRC)
       WRITE(*, *)'Run stopped'
       ERROR_OPEN = .TRUE.
-      STOP
+      CALL EXIT(1)     ! process exit status 1: the run could not start
     CASE(20)   ! ENOTDIR
       WRITE(*, *)'ERROR: This is not a directory:', TRIM(DIRC)
       WRITE(*, *)'Run stopped'
       ERROR_OPEN = .TRUE.
-      STOP
+      CALL EXIT(1)
     CASE(0)    ! NO ERROR
       WRITE(*, '(A,A)') 'Working directory: ', TRIM(DIRC)
     END SELECT
@@ -128,8 +137,11 @@ INTEGER FUNCTION CE_QUAL_W2_MAIN()
   ! Write compiler version info
   OPEN(CON, FILE = 'W2CodeCompilerVersion.opt', status = 'unknown')
   write(CON, '(A,F5.2)')' CE-QUAL-W2 Version #:', W2VER
+  write(CON, *)'Release: ', RELEASE_VERSION
   write(CON, *)'Compiler Version and Code Compile Date'
   write(CON, *)'gfortran Unix/MacOS version'
+  write(CON, *)'Compiler: ', COMPILER_VERSION()
+  write(CON, *)'Compiler options: ', COMPILER_OPTIONS()
   write(CON, *)'CE-QUAL-W2 Version compile date:', BUILDTIME
   close(CON)
 
@@ -160,7 +172,7 @@ INTEGER FUNCTION CE_QUAL_W2_MAIN()
     IF (I /= 0) THEN
       WRITE(*, *) 'ERROR: Could not open w2_con.npt or w2_con.csv'
       ERROR_OPEN = .TRUE.
-      STOP
+      CALL EXIT(1)
     ENDIF
     WRITE(*, *) 'Using control file: w2_con.csv'
   ELSE
@@ -216,7 +228,7 @@ INTEGER FUNCTION CE_QUAL_W2_MAIN()
         ALLOCATE (WAIT_TYPE(MAX(1, N_WAITS)), WAIT_INDEX(MAX(1, N_WAITS)), FILEDIR(MAX(1, N_WAITS)))
       ELSE
         WRITE (W2ERR, '(A)') 'ERROR-- Number of inputs to wait for must be greater than zero in multiple_WB.npt file.'
-        STOP
+        CALL EXIT(1)
       END IF
       READ (CON, *)
       DO NWAIT = 1, N_WAITS
@@ -226,13 +238,13 @@ INTEGER FUNCTION CE_QUAL_W2_MAIN()
       READ (CON, *) TIME_BUFFER
       IF (TIME_BUFFER < 0) THEN
         WRITE (W2ERR, '(A)') 'ERROR-- Buffer time (days of data to await) in multiple_WB.npt cannot be less than zero.'
-        STOP
+        CALL EXIT(1)
       END IF
       READ (CON, *)
       READ (CON, *) WAIT_TIME
       IF (WAIT_TIME <= 0) THEN
         WRITE (W2ERR, '(A)') 'ERROR-- Delay time in multiple_WB.npt must be greater than zero.'
-        STOP
+        CALL EXIT(1)
       END IF
       OPEN (9911, FILE = 'WaitForRunLog.opt', STATUS = 'unknown')
     END IF
@@ -380,7 +392,7 @@ INTEGER FUNCTION CE_QUAL_W2_MAIN()
     WRITE(*, '(A)') 'Restart file read successfully.'
   END IF
 
-  CE_QUAL_W2_MAIN = 1
+  CE_QUAL_W2_MAIN = 0                ! 0 = normal end; set to 1 below if the run stops on an error
 
   ! Open warning file
   IF(.NOT.WARNING_OPEN)THEN
@@ -1651,10 +1663,18 @@ INTEGER FUNCTION CE_QUAL_W2_MAIN()
         END IF
       END IF
     END DO
-    CALL WRITE_STATUS_FILE()
+    ! Status file: written after the first step, then at most once per wall-clock second (status_output.f90)
+    CALL WRITE_STATUS_FILE_TIMED(.FALSE.)
   END DO    ! END OF MAIN DO WHILE LOOP
 
   230 CONTINUE
+  IF (ERROR_OPEN) THEN
+    CE_QUAL_W2_MAIN = 1
+    WRITE(*, '(/A,F0.4,A)') 'CE-QUAL-W2 stopped on an error at Julian day ', JDAY, '; see w2.err'
+    IF (LEN_TRIM(TEXT) > 0) WRITE(*, '(A)') TRIM(TEXT)
+    WRITE(ERROR_UNIT, '(A,F0.4,A)') 'CE-QUAL-W2 stopped on an error at Julian day ', JDAY, '; see w2.err'
+    CALL WRITE_STATUS_COMPLETE('failed')
+  END IF
   IF (STOP_PUSHED) THEN
     CALL DATE_AND_TIME (CDATE, CCTIME)
     WRITE(*, '(/A)') 'Execution stopped by user.'
@@ -1673,7 +1693,24 @@ INTEGER FUNCTION CE_QUAL_W2_MAIN()
   240 CONTINUE
 
   WRITE(*, '(/A)') '--------------------------------------------------------'
-  WRITE(*, '(A)') 'Simulation completed.'
+  IF (CE_QUAL_W2_MAIN == 0) THEN
+    WRITE(*, '(A)') 'Simulation completed.'
+  ELSE
+    WRITE(*, '(A)') 'Simulation stopped before TMEND.'
+
+    ! Copy the first lines of w2.err (closed and kept by ENDSIMULATION) to the console, so the log of a
+    ! failed run states the cause without opening another file
+    OPEN(NEWUNIT = ERR_UNIT, FILE = 'w2.err', STATUS = 'OLD', ACTION = 'READ', IOSTAT = ERR_STAT)
+    IF (ERR_STAT == 0) THEN
+      WRITE(*, '(/A)') 'w2.err:'
+      DO ERR_LINES = 1, 50
+        READ(ERR_UNIT, '(A)', IOSTAT = ERR_STAT) ERR_LINE
+        IF (ERR_STAT /= 0) EXIT
+        WRITE(*, '(A)') TRIM(ERR_LINE)
+      END DO
+      CLOSE(ERR_UNIT)
+    END IF
+  END IF
 
   RETURN
 END FUNCTION CE_QUAL_W2_MAIN

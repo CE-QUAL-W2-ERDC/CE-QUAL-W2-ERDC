@@ -977,8 +977,8 @@ SUBROUTINE OUTPUTA
         END DO
         WRITE(FLX2(JW), '(F10.3,",",f8.3,",",*(E12.4,","))')JDAY, ELTMF(JW) / DAY, (KFJW(JW, KFCN(K, JW)), K = 1, NAF(JW))
         ELTMF(JW) = 0.0
-        KF(:, CUS(BS(JW)):DS(BE(JW)), KFCN(1:NAF(JW), JW)) = 0.0
-        KFS(:, CUS(BS(JW)):DS(BE(JW)), KFCN(1:NAF(JW), JW)) = 0.0
+        KF(:, US(BS(JW)):DS(BE(JW)), KFCN(1:NAF(JW), JW)) = 0.0     ! reset inactive segments too, so stale sums are not reported when they are re-added
+        KFS(:, US(BS(JW)):DS(BE(JW)), KFCN(1:NAF(JW), JW)) = 0.0
         KFJW(JW, KFCN(1:NAF(JW), JW)) = 0.0
       END IF
     END IF

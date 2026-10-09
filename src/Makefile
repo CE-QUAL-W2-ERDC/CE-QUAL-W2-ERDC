@@ -4,10 +4,16 @@
 # This Makefile compiles the CE-QUAL-W2 model using gfortran instead of
 # the Intel Fortran compiler (ifort).
 #
+# Release v2026.10
+#
 # Usage:
-#   make           - Build the executable
-#   make clean     - Remove object files, modules, and executable
-#   make distclean - Remove all generated files including backup files
+#   make            - Build the executable
+#   make FPE_TRAP=1 - Build with floating-point exception trapping (see below)
+#   make clean      - Remove object files, modules, and executable
+#   make distclean  - Remove all generated files including backup files
+#
+# Run "make clean" before switching between FPE_TRAP=1 and the default build; the
+# object files do not record the flags they were compiled with.
 #
 # Created: November 2025
 #******************************************************************************
@@ -28,9 +34,32 @@ FFLAGS = -O2 \
          -fdefault-double-8 \
          -fmax-stack-var-size=0
 
-# Optional flags for debugging (uncomment as needed)
-DEBUG_FLAGS = -g  -finit-local-zero -fcheck=all -fcheck=bounds 
+# Part of the release configuration; do not remove for production builds.
+# -finit-local-zero sets local scalars to zero on entry and static local arrays once.
+# -fcheck=all stops the run with a message at an out-of-bounds index or other run-time error.
+# With gfortran 16.2 the checks also change the generated floating-point code: a build without
+# them gave different results within the first model day of the 2001 baseline
+# (docs/release-notes/v2026.10.md). Keeping these flags keeps the numerics of the v2026.02 builds,
+# which use the same flags. -g adds debug information only. The checks roughly double the run time.
+DEBUG_FLAGS = -g  -finit-local-zero -fcheck=all -fcheck=bounds
 FFLAGS += $(DEBUG_FLAGS)
+
+# Link the Fortran runtime statically so that a later Homebrew GCC upgrade cannot change
+# the runtime used by an existing executable (a dynamically linked build loads libgfortran
+# from /opt/homebrew/opt/gcc/lib/gcc/current at run time). Check with: otool -L ce-qual-w2
+LDFLAGS = -static-libgfortran -static-libgcc -static-libquadmath
+
+# Optional floating-point exception trapping, off by default:  make FPE_TRAP=1
+# Stops the run at the first invalid operation, division by zero or overflow, as the Intel
+# Release|x64 build does with /fpe:0 (underflow does not trap). The trap does not change the
+# arithmetic, so a run that completes without a trap gives the same results as the default build.
+# On Apple Silicon the trap arrives as SIGILL (exit status 132), not SIGFPE; the gfortran
+# backtrace names the routine, but its line number can be that of the last call before the
+# trapping instruction. Run under lldb for the exact line:
+#   lldb --batch -o "process launch" -k "bt 20" -k "quit 1" -- ./ce-qual-w2
+ifeq ($(FPE_TRAP),1)
+FFLAGS += -ffpe-trap=invalid,zero,overflow
+endif
 
 # Optional OpenMP support (currently not used)
 # FFLAGS += -fopenmp
@@ -122,7 +151,7 @@ $(PROGRAM): $(ALL_OBJS)
 	@echo "=================================================="
 	@echo "Linking $(PROGRAM)..."
 	@echo "=================================================="
-	$(FC) $(FFLAGS) -o $@ $(ALL_OBJS)
+	$(FC) $(FFLAGS) $(LDFLAGS) -o $@ $(ALL_OBJS)
 	@echo ""
 	@echo "Build successful! Executable: $(PROGRAM)"
 	@echo ""
@@ -206,8 +235,12 @@ help:
 	@echo "  make distclean - Remove all generated files"
 	@echo "  make help      - Show this help message"
 	@echo ""
+	@echo "Options:"
+	@echo "  make FPE_TRAP=1 - Trap invalid, divide-by-zero and overflow"
+	@echo ""
 	@echo "Compiler: $(FC)"
 	@echo "Flags: $(FFLAGS)"
+	@echo "Link flags: $(LDFLAGS)"
 	@echo ""
 
 .PHONY: all clean distclean help
