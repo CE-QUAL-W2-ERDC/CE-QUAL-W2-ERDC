@@ -1,0 +1,4 @@
+# Formatting-only commits, skipped by GitHub blame and by
+# git blame --ignore-revs-file .git-blame-ignore-revs
+ddf7f7f8dd7110405da6d6617dff504659340898  # formatted water-quality.f90
+86d294745524a015a387ffe6fffff51f01283a94  # reformatted code

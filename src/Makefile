@@ -234,6 +234,7 @@ help:
 	@echo "  make clean     - Remove object files and modules"
 	@echo "  make distclean - Remove all generated files"
 	@echo "  make help      - Show this help message"
+	@echo "  make test      - Build and run the HAB unit tests"
 	@echo ""
 	@echo "Options:"
 	@echo "  make FPE_TRAP=1 - Trap invalid, divide-by-zero and overflow"
@@ -243,4 +244,7 @@ help:
 	@echo "Link flags: $(LDFLAGS)"
 	@echo ""
 
-.PHONY: all clean distclean help
+test:
+	$(MAKE) -C ../tests/hab test
+
+.PHONY: all clean distclean help test

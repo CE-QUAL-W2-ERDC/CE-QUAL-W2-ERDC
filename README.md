@@ -1,6 +1,6 @@
 # CE-QUAL-W2 (ERDC HAB Version)
 
-CE-QUAL-W2 is a two-dimensional, laterally averaged hydrodynamic and water quality model for rivers, lakes, reservoirs, and estuaries. This version (4.5) includes Harmful Algal Bloom (HAB) capabilities developed by ERDC.
+CE-QUAL-W2 is a two-dimensional, laterally averaged hydrodynamic and water quality model for rivers, lakes, reservoirs, and estuaries. This version (4.5) includes Harmful Algal Bloom (HAB) capabilities developed under the lead of the U.S. Army Engineer Research and Development Center (ERDC).
 
 ## Features
 
@@ -46,6 +46,17 @@ build
 
 Produces the `ce-qual-w2.exe` executable.
 
+## Testing
+
+The HAB unit tests build and run with:
+
+```bash
+cd src
+make test
+```
+
+or, equivalently, `make test` in `tests/hab`.
+
 ## Running
 
 ```bash
@@ -57,6 +68,10 @@ For large models on Unix, increase the stack size first:
 ```bash
 ulimit -s unlimited
 ```
+
+## Releases
+
+Releases are numbered by year and month (for example, v2026.10) and are tagged in git. Executables for each release are attached to the corresponding GitHub release. Changes in each release are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## Repository Structure
 
@@ -71,9 +86,13 @@ src/                       Source code
   Makefile                   Build system (macOS/Linux)
   Makefile.win               Build system (Windows)
   build.bat                  Build script (Windows, no make required)
+tests/hab/                 HAB unit tests
 docs/
+  compiling/                 Compiling on Windows
   examples/hab/              Example HAB input files
+  release-notes/             Detailed release notes
   HAB_Features_User_Manual.md
+CHANGELOG.md               Changes in each release
 ```
 
 ## HAB Features
@@ -89,8 +108,16 @@ Four optional HAB features, activated by placing the corresponding CSV file in t
 
 See `docs/HAB_Features_User_Manual.md` for details.
 
+## Credits
+
+CE-QUAL-W2 is developed at Portland State University (PSU). This version is based on the PSU v4.5 source of July 7, 2025. ERDC led the development of the HAB features in this version: they were developed by LimnoTech for ERDC, and ERDC revised and extended them and ported the model to gfortran.
+
 ## Maintainers
 
 - Dr. Scott Wells (wellss@pdx.edu), Portland State University
 - Dr. Zhong Zhang, Portland State University
 - Dr. Todd Steissberg, ERDC
+
+## License
+
+This repository is released under the BSD 3-Clause License; see [LICENSE](LICENSE). The CE-QUAL-W2 v4.5 source from PSU is under the MIT License, and its notice is kept in the header of `src/w2modules.F90`.

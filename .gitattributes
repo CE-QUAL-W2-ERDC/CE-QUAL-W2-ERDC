@@ -1,0 +1,4 @@
+# Store text files with LF line endings. Batch files are checked out with
+# CRLF line endings, which cmd.exe needs to find goto labels reliably.
+* text=auto eol=lf
+*.bat text eol=crlf

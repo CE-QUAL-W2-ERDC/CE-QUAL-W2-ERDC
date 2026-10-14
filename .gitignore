@@ -40,8 +40,9 @@
 # debug information files
 *.dwo
 
-# Test binaries
-tests/hab/run_hab_tests
+# Model and test executables
+/src/ce-qual-w2
+/tests/hab/run_hab_tests
 
 # MacOS
 .DS_Store
